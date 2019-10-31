@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:background="@drawable/background"
+    android:padding="10dp"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="24dp"
+        android:layout_marginTop="30dp"
+        android:gravity="center"
+        android:textColor="#9e005d"
+        android:text="choose your music"
+        />
+    <ListView
+        android:layout_marginTop="20dp"
+        android:id="@+id/list_music"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+</LinearLayout>
+
+    <ImageView
+        android:id="@+id/ivPurchase"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/icon_purchase"
+        android:visibility="invisible"
+        android:layout_marginTop="15dp"
+        android:layout_marginRight="15dp"
+        />
+</RelativeLayout>

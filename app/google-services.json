@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "503283175752",
+    "firebase_url": "https://monir-af313.firebaseio.com",
+    "project_id": "monir-af313",
+    "storage_bucket": "monir-af313.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:503283175752:android:c38ba6526fb3ec4970637d",
+        "android_client_info": {
+          "package_name": "com.music.monir"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "503283175752-17osc2ekd3aki5jekb7nsco8s5ih8foh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.music.monir",
+            "certificate_hash": "a6b417815ce2052a15e3ed88dbfd559f13738a64"
+          }
+        },
+        {
+          "client_id": "503283175752-hjkj5qfj144r8pjuda6m267p0rovl16u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYxvuqXiJu4KZdc872yb_sOq6EaFqjVJA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "503283175752-hjkj5qfj144r8pjuda6m267p0rovl16u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

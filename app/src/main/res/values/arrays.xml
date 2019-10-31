@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="pitchArray">
+        <item> A</item>
+        <item>A#</item>
+        <item> B</item>
+        <item> C</item>
+        <item>C#</item>
+        <item> D</item>
+        <item>D#</item>
+        <item> E</item>
+        <item>E#</item>
+        <item> F</item>
+        <item> G</item>
+        <item>G#</item>
+
+    </string-array>
+</resources>

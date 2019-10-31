@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background"
+    tools:context=".MainActivity">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/iv_info"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:visibility="visible"
+        android:layout_marginBottom="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:src="@drawable/icon_info"/>
+
+
+    <ImageView
+        android:id="@+id/iv_help"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginBottom="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/icon_help"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="156dp"
+        android:text=""
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"/>
+
+ <LinearLayout
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
+     android:weightSum="100"
+     android:orientation="vertical">
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="60"
+      android:layout_marginLeft="10dp"
+      android:layout_marginRight="10dp"
+      android:layout_marginTop="15dp"
+      android:padding="10dp"
+      android:orientation="vertical">
+
+      <TextView
+          android:id="@+id/title"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:textSize="22dp"
+          android:enabled="true"
+          android:ellipsize = "marquee"
+          android:fadingEdge = "horizontal"
+          android:marqueeRepeatLimit = "marquee_forever"
+          android:scrollHorizontally = "true"
+          android:singleLine = "true"
+          android:textColor="#aa9e005d"
+          android:gravity="center"
+          android:text="SaathSangeet "
+          />
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:layout_marginTop="15dp"
+        android:enabled="true"
+        android:ellipsize = "marquee"
+        android:fadingEdge = "horizontal"
+        android:marqueeRepeatLimit = "marquee_forever"
+        android:scrollHorizontally = "true"
+        android:singleLine = "true"
+        android:textColor="#9e005d"
+        android:gravity="center"
+        android:text="santoor1_Tintaal-Bhupali-240bpm_D_LR.mp3"
+        />
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginLeft="10dp"
+          android:orientation="horizontal"
+          android:layout_marginTop="30dp"
+          android:weightSum="20">
+
+          <TextView
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:layout_gravity="bottom"
+              android:layout_marginLeft="5dp"
+              android:layout_marginBottom="2dp"
+              android:layout_weight="4"
+              android:textColor="#9e005d"
+              android:text="BPM"/>
+
+         <com.jaygoo.widget.RangeSeekBar
+             android:id="@+id/sb_bpm"
+             android:layout_width="0dp"
+             android:layout_height="wrap_content"
+             android:layout_weight="16"
+             app:rsb_gravity="bottom"
+             app:rsb_indicator_background_color="@color/colorRed"
+             app:rsb_indicator_height="wrap_content"
+             app:rsb_indicator_padding_bottom="10dp"
+             app:rsb_indicator_padding_left="15dp"
+             app:rsb_indicator_padding_right="15dp"
+             app:rsb_indicator_padding_top="10dp"
+             app:rsb_indicator_radius="5dp"
+             app:rsb_indicator_show_mode="alwaysShow"
+             app:rsb_indicator_text_size="12sp"
+             app:rsb_indicator_width="50dp"
+             app:rsb_mode="single"
+             android:layout_marginLeft="16dp"
+             android:layout_marginRight="16dp"
+             app:rsb_progress_color="@color/colorRed"
+             app:rsb_progress_default_color="#ffffff"
+             app:rsb_thumb_drawable="@drawable/thumb_default"
+             app:rsb_thumb_height="30dp"
+             app:rsb_thumb_width="30dp"
+             app:rsb_tick_mark_mode="number"
+            />
+      </LinearLayout>
+
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:layout_marginLeft="10dp"
+          android:layout_marginTop="5dp"
+          android:weightSum="20">
+          <TextView
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:layout_gravity="bottom"
+              android:layout_marginLeft="5dp"
+              android:layout_marginBottom="12dp"
+              android:layout_weight="4"
+              android:textColor="#9e005d"
+              android:text="PITCH"/>
+
+          <com.jaygoo.widget.RangeSeekBar
+              android:id="@+id/sb_pitch"
+              android:layout_width="0dp"
+              android:layout_weight="16"
+              android:layout_height="wrap_content"
+              app:rsb_gravity="bottom"
+              android:layout_marginLeft="16dp"
+              android:layout_marginRight="16dp"
+              app:rsb_indicator_arrow_size="10dp"
+              app:rsb_indicator_padding_bottom="10dp"
+              app:rsb_indicator_padding_left="15dp"
+              app:rsb_indicator_padding_right="15dp"
+              app:rsb_indicator_padding_top="10dp"
+              app:rsb_indicator_radius="5dp"
+              app:rsb_indicator_show_mode="alwaysHide"
+              app:rsb_mode="single"
+              app:rsb_progress_color="#ffffff"
+              app:rsb_step_auto_bonding="true"
+              app:rsb_step_color="#ffffff"
+              app:rsb_step_height="8dp"
+              app:rsb_step_radius="5dp"
+              app:rsb_step_width="8dp"
+              app:rsb_steps="11"
+              app:rsb_tick_mark_layout_gravity="top"
+              app:rsb_tick_mark_mode="other"
+              app:rsb_tick_mark_text_color="#9e005d"
+              app:rsb_tick_mark_text_margin="20dp"
+              app:rsb_tick_mark_text_size="10dp"
+              app:rsb_progress_default_color="#ffffff"
+              app:rsb_thumb_drawable="@drawable/thumb_default"
+              app:rsb_thumb_height="30dp"
+              app:rsb_thumb_scale_ratio="1.25"
+              app:rsb_thumb_width="30dp"
+              app:rsb_tick_mark_text_array="@array/pitchArray"/>
+
+
+      </LinearLayout>
+
+
+      <com.google.android.material.floatingactionbutton.FloatingActionButton
+          android:id="@+id/btn_play"
+          style="@style/Widget.Design.FloatingActionButton"
+          android:layout_width="80dp"
+          android:layout_height="80dp"
+          android:layout_gravity="center"
+          android:gravity="center"
+          android:paddingBottom="10dp"
+          android:visibility="visible"
+          app:fabCustomSize="80dp"
+          app:maxImageSize="40dp"
+
+          android:layout_marginTop="30dp"
+          app:srcCompat="@drawable/btn_play" />
+
+  </LinearLayout>
+     <LinearLayout
+         android:layout_width="match_parent"
+         android:layout_height="0dp"
+         android:layout_weight="40"
+         android:weightSum="10"
+         android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginRight="5dp"
+        android:orientation="horizontal"
+        android:layout_weight="3"
+        android:weightSum="20">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="5dp"
+            android:layout_marginBottom="3dp"
+            android:layout_weight="4"
+            android:textColor="#9e005d"
+            android:text="Tanpura"/>
+
+        <com.jaygoo.widget.RangeSeekBar
+            android:id="@+id/sb_volumn"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="40dp"
+            android:layout_weight="16"
+            app:rsb_gravity="bottom"
+            app:rsb_indicator_background_color="@color/colorRed"
+            app:rsb_indicator_height="wrap_content"
+            app:rsb_indicator_padding_bottom="10dp"
+            app:rsb_indicator_padding_left="15dp"
+            app:rsb_indicator_padding_right="15dp"
+            app:rsb_indicator_padding_top="10dp"
+            app:rsb_indicator_radius="5dp"
+            app:rsb_indicator_show_mode="showWhenTouch"
+            app:rsb_indicator_text_size="12sp"
+            app:rsb_indicator_width="50dp"
+            app:rsb_mode="single"
+            app:rsb_progress_color="@color/colorRed"
+            app:rsb_progress_default_color="#ffffff"
+            app:rsb_thumb_drawable="@drawable/thumb_default"
+            app:rsb_thumb_height="30dp"
+            app:rsb_thumb_width="30dp"
+            app:rsb_tick_mark_mode="number" />
+    </LinearLayout>
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="0dp"
+          android:orientation="horizontal"
+          android:layout_marginTop="25dp"
+          android:layout_weight="7"
+
+          android:gravity="bottom|center"
+          >
+
+          <LinearLayout
+              android:layout_width="wrap_content"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:layout_marginLeft="15dp"
+              android:layout_marginBottom="10dp">
+              <TextView
+                  android:id="@+id/tvMasterVol"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginLeft="25dp"
+                  android:textColor="#9e005d"
+                  android:text="MASTER VOLUME"
+                  />
+               <com.jaygoo.widget.VerticalRangeSeekBar
+                   android:id="@+id/sb_master_volumn"
+                   android:layout_width="70dp"
+                   android:layout_marginLeft="20dp"
+                   android:layout_marginTop="5dp"
+                   android:layout_height="match_parent"
+                   app:rsb_gravity="bottom"
+                   app:rsb_indicator_height="wrap_content"
+                   app:rsb_indicator_background_color="@color/colorRed"
+                   app:rsb_indicator_padding_bottom="10dp"
+                   app:rsb_indicator_padding_left="15dp"
+                   app:rsb_indicator_padding_right="15dp"
+                   app:rsb_indicator_padding_top="10dp"
+                   app:rsb_indicator_radius="5dp"
+                   app:rsb_indicator_show_mode="showWhenTouch"
+                   app:rsb_indicator_width="wrap_content"
+                   app:rsb_mode="single"
+                   app:rsb_orientation="left"
+                   app:rsb_progress_color="@color/colorRed"
+                   app:rsb_progress_default_color="#ffffff"
+                   app:rsb_thumb_drawable="@drawable/thumb_default"
+                   app:rsb_tick_mark_mode="number"
+                    />
+          </LinearLayout>
+       <LinearLayout
+           android:layout_width="wrap_content"
+           android:layout_height="match_parent"
+           android:orientation="horizontal"
+           android:layout_marginLeft="0dp"
+           android:layout_marginRight="15dp"
+           android:paddingRight="35dp"
+           android:paddingBottom="10dp"
+            >
+
+           <LinearLayout
+               android:layout_width="wrap_content"
+               android:layout_height="match_parent"
+               android:orientation="vertical">
+               <TextView
+                   android:id="@+id/tvLeftVol"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:layout_marginLeft="25dp"
+                   android:textColor="#9e005d"
+                   android:layout_gravity="right"
+                   android:layout_marginRight="10dp"
+                   android:text="L"
+                   android:textSize="16dp"
+
+                   />
+               <com.jaygoo.widget.VerticalRangeSeekBar
+                   android:id="@+id/sb_volumn_l"
+                   android:layout_width="70dp"
+                   android:layout_height="match_parent"
+                   app:rsb_gravity="bottom"
+                   android:layout_marginTop="5dp"
+                   app:rsb_indicator_background_color="@color/colorRed"
+                   app:rsb_indicator_height="wrap_content"
+                   app:rsb_indicator_padding_bottom="10dp"
+                   app:rsb_indicator_padding_left="15dp"
+                   app:rsb_indicator_padding_right="15dp"
+                   app:rsb_indicator_padding_top="10dp"
+                   app:rsb_indicator_radius="5dp"
+                   app:rsb_indicator_show_mode="alwaysHide"
+                   app:rsb_indicator_width="wrap_content"
+                   app:rsb_mode="single"
+                   app:rsb_orientation="left"
+                   app:rsb_progress_default_color="#ffffff"
+                   app:rsb_progress_color="@color/colorRed"
+                   app:rsb_thumb_drawable="@drawable/thumb_default"
+                   app:rsb_tick_mark_mode="number"
+                   />
+           </LinearLayout>
+           <LinearLayout
+               android:layout_width="wrap_content"
+               android:layout_height="match_parent"
+               android:orientation="vertical">
+               <TextView
+                   android:id="@+id/tvRightVol"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:layout_marginLeft="25dp"
+                   android:textColor="#9e005d"
+                   android:layout_gravity="right"
+                   android:layout_marginRight="10dp"
+                   android:text="R"
+                   android:textSize="16dp"
+                   />
+               <com.jaygoo.widget.VerticalRangeSeekBar
+                   android:id="@+id/sb_volumn_r"
+                   android:layout_width="70dp"
+                   android:layout_height="match_parent"
+                   app:rsb_gravity="bottom"
+                   android:layout_marginTop="5dp"
+                   app:rsb_indicator_background_color="@color/colorRed"
+                   app:rsb_indicator_height="wrap_content"
+                   app:rsb_indicator_padding_bottom="10dp"
+                   app:rsb_indicator_padding_left="15dp"
+                   app:rsb_indicator_padding_right="15dp"
+                   app:rsb_indicator_padding_top="10dp"
+                   app:rsb_indicator_radius="5dp"
+                   app:rsb_indicator_show_mode="alwaysHide"
+                   app:rsb_indicator_width="wrap_content"
+                   app:rsb_mode="single"
+                   app:rsb_orientation="left"
+                   app:rsb_progress_color="@color/colorRed"
+                   app:rsb_progress_default_color="#ffffff"
+                   app:rsb_thumb_drawable="@drawable/thumb_default"
+                   app:rsb_tick_mark_mode="number"
+                    />
+           </LinearLayout>
+       </LinearLayout>
+       </LinearLayout>
+     </LinearLayout>
+ </LinearLayout>
+
+</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
