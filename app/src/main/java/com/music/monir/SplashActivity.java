@@ -45,7 +45,7 @@ public class SplashActivity extends AppCompatActivity {
 
 
     private String appKEY = "ODN7F4TU7GB2A0AQ6KV";
-    private String SKU = "_test";
+    private String SKU = "saath";
     final String OK = "OK";
     final String BUY_NOW = "BUY NOW";
     final String START_TRIAL = "START TRIAL";
