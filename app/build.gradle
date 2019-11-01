@@ -45,4 +45,8 @@ dependencies {
 
     implementation 'io.trialy.library:trialy:1.0.9'
 
+    implementation 'com.google.android.gms:play-services-wallet:18.0.0'
+
+    implementation 'com.android.billingclient:billing:2.0.3'
+
 }

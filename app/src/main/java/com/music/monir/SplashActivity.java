@@ -25,6 +25,8 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 
+import com.music.monir.payment.payment_activity;
+
 import org.w3c.dom.Text;
 
 import java.util.Locale;
@@ -43,7 +45,7 @@ public class SplashActivity extends AppCompatActivity {
 
 
     private String appKEY = "ODN7F4TU7GB2A0AQ6KV";
-    private String SKU = "saath";
+    private String SKU = "_test";
     final String OK = "OK";
     final String BUY_NOW = "BUY NOW";
     final String START_TRIAL = "START TRIAL";
@@ -148,7 +150,9 @@ public class SplashActivity extends AppCompatActivity {
                 ok.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Toast.makeText(SplashActivity.this,"Need to buy feature", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(SplashActivity.this, payment_activity.class);
+                        startActivity(intent);
+                        finish();
                         dialog.dismiss();
                     }
                 });

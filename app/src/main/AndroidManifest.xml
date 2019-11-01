@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.music.monir">
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="com.android.vending.BILLING"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.android.vending.BILLING" />
 
     <application
         android:allowBackup="true"
@@ -12,27 +12,34 @@
         android:roundIcon="@drawable/icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity" android:screenOrientation="portrait">
-        </activity>
-        <activity android:name=".HelpActivity" android:screenOrientation="portrait">
-        </activity>
-        <activity android:name=".InfoActivity" android:screenOrientation="portrait">
-        </activity>
-        <activity android:name=".SplashActivity" android:screenOrientation="portrait">
+        <activity android:name=".payment.payment_activity"></activity>
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".HelpActivity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".InfoActivity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".SplashActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MusicChooseActivity" android:screenOrientation="portrait">
-
-        </activity>
-        <activity android:name=".TanpuraChooseActivity" android:screenOrientation="portrait">
-
-        </activity>
-        <activity android:name=".PurchaseActivity" android:screenOrientation="portrait">
-
-        </activity>
+        <activity
+            android:name=".MusicChooseActivity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".TanpuraChooseActivity"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".PurchaseActivity"
+            android:screenOrientation="portrait"></activity>
 
         <meta-data
             android:name="preloaded_fonts"
