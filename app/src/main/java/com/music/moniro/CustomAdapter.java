@@ -1,5 +1,5 @@
 
-package com.music.monir;
+package com.music.moniro;
 
 import android.content.Context;
 import android.view.LayoutInflater;

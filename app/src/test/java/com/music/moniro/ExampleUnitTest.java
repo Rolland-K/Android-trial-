@@ -1,4 +1,4 @@
-package com.music.monir;
+package com.music.moniro;
 
 import org.junit.Test;
 

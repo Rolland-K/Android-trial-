@@ -1,7 +1,6 @@
-package com.music.monir;
+package com.music.moniro;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -14,20 +13,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.util.SparseLongArray;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Space;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 
-import com.music.monir.payment.payment_activity;
-
-import org.w3c.dom.Text;
+import com.music.moniro.payment.payment_activity;
 
 import java.util.Locale;
 
@@ -44,8 +38,8 @@ public class SplashActivity extends AppCompatActivity {
 
 
 
-    private String appKEY = "ODN7F4TU7GB2A0AQ6KV";
-    private String SKU = "saath";
+    private String appKEY = "2KUNOKEJX1FUXLUYNQ4";
+    private String SKU = "_test";
     final String OK = "OK";
     final String BUY_NOW = "BUY NOW";
     final String START_TRIAL = "START TRIAL";
@@ -62,7 +56,10 @@ public class SplashActivity extends AppCompatActivity {
             @Override
             public void run() {
                 /* Create an Intent that will start the Menu-Activity. */
-                mTrialy.checkTrial(SKU, mTrialyCallback);
+                try {
+                    mTrialy.checkTrial(SKU, mTrialyCallback);
+                }
+                catch (Exception E){}
 
             }
         }, 2000);
