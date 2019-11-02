@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.music.monir.payment.util;
+package com.music.moniro.payment.util;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

@@ -1,4 +1,4 @@
-package com.music.monir.payment;
+package com.music.moniro.payment;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -13,12 +13,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.music.monir.R;
-import com.music.monir.payment.util.IabBroadcastReceiver;
-import com.music.monir.payment.util.IabHelper;
-import com.music.monir.payment.util.IabResult;
-import com.music.monir.payment.util.Inventory;
-import com.music.monir.payment.util.Purchase;
+import com.music.moniro.R;
+import com.music.moniro.payment.util.IabBroadcastReceiver;
+import com.music.moniro.payment.util.IabHelper;
+import com.music.moniro.payment.util.IabResult;
+import com.music.moniro.payment.util.Inventory;
+import com.music.moniro.payment.util.Purchase;
 
 import java.util.ArrayList;
 import java.util.List;

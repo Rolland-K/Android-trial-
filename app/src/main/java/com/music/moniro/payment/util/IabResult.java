@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.music.monir.payment.util;
+package com.music.moniro.payment.util;
 
 /**
  * Represents the result of an in-app billing operation.
