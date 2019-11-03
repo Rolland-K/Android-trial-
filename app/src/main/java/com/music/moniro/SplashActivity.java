@@ -48,10 +48,8 @@ import static io.trialy.library.Constants.STATUS_TRIAL_RUNNING;
 public class SplashActivity extends AppCompatActivity implements IabBroadcastReceiver.IabBroadcastListener,
         DialogInterface.OnClickListener{
 
-
-
     private String appKEY = "2KUNOKEJX1FUXLUYNQ4";
-    private String SKU = "_test";
+    private String SKU = "saath";
     final String OK = "OK";
     final String BUY_NOW = "BUY NOW";
     final String START_TRIAL = "START TRIAL";
@@ -61,17 +59,13 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
 
     String IS_PREMIUM = "5RZZJLZVF5";
     String MEMBERSHIP = "membership";
+    String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs0p78+rUMwrVUUGzA43bpsGxQoeA2UFVAV9uph6+Z5sjfkkXTkaNJj7igSdVaM+Dj+NNgfV7zkhzD1y2EkvKsX7Zy1yXPTQjcS+ddg8uz+HCy/FZKnwVHgJPRxdXujLl40iyB1NrVJUtI3nbzOAbsS2PJBybJC9JMCnoBro/+1AfI1JMPNwCid8lV8TwAYqWl7KOCQD8uQQbqNTfS1GAOY5TS7bi/vicF/m+YlCjyKCD6XnNfNDm2liJLi07mwd/FlV6dM1/5IE9/kd2RhvRRXg9MVGIdYKtHH5nf/Ru11rZw0SKFaTvXdW5lwP9nwQOzmeBajxWyqGO5KYHLuq1ZwIDAQAB";
 
     static final String TAG = "TrivialDrive";
 
     // Does the user have the premium upgrade?
-    boolean mIsPremium = false;
+    static boolean mIsPremium = false;
 
-    // Does the user have an active subscription to the infinite gas plan?
-    boolean mSubscribedToInfiniteGas = false;
-
-    // Will the subscription auto-renew?
-    boolean mAutoRenewEnabled = false;
 
     // Tracks the currently owned infinite gas SKU, and the options in the Manage dialog
     String mInfiniteGasSku = "";
@@ -86,18 +80,13 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
 
 
     // SKU for our subscription (infinite gas)
-    static final String SKU_INFINITE_GAS_MONTHLY = "infinite_gas_monthly";
-    static final String SKU_INFINITE_GAS_YEARLY = "infinite_gas_yearly";
 
     // (arbitrary) request code for the purchase flow
     static final int RC_REQUEST = 10001;
 
     // Graphics for the gas gauge
-    static int[] TANK_RES_IDS = { R.drawable.gas0, R.drawable.gas1, R.drawable.gas2,
-            R.drawable.gas3, R.drawable.gas4 };
 
     // How many units (1/4 tank is our unit) fill in the tank.
-    static final int TANK_MAX = 4;
 
     // Current amount of gas in tank, in units
     int mTank;
@@ -107,6 +96,7 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
 
     // Provides purchase notification while this app is running
     IabBroadcastReceiver mBroadcastReceiver;
+    public static SplashActivity self;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,10 +106,31 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
          * and close this Splash-Screen after some seconds.*/
         mTrialy = new Trialy(this, appKEY);
         loadData();
+        self = this;
 
-        String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs0p78+rUMwrVUUGzA43bpsGxQoeA2UFVAV9uph6+Z5sjfkkXTkaNJj7igSdVaM+Dj+NNgfV7zkhzD1y2EkvKsX7Zy1yXPTQjcS+ddg8uz+HCy/FZKnwVHgJPRxdXujLl40iyB1NrVJUtI3nbzOAbsS2PJBybJC9JMCnoBro/+1AfI1JMPNwCid8lV8TwAYqWl7KOCQD8uQQbqNTfS1GAOY5TS7bi/vicF/m+YlCjyKCD6XnNfNDm2liJLi07mwd/FlV6dM1/5IE9/kd2RhvRRXg9MVGIdYKtHH5nf/Ru11rZw0SKFaTvXdW5lwP9nwQOzmeBajxWyqGO5KYHLuq1ZwIDAQAB";
+        init();
 
+        new Handler().postDelayed(new Runnable(){
+            @Override
+            public void run() {
+                /* Create an Intent that will start the Menu-Activity. */
+                try {
+                    if (verify())
+                    {
+                        _start();
+                    }
+                    else {
+                        mTrialy.checkTrial(SKU, mTrialyCallback);
+                    }
+                }
+                catch (Exception E){}
 
+            }
+        }, 2000);
+
+    }
+
+    private void init() {
 
         mHelper = new IabHelper(this, base64EncodedPublicKey);
 
@@ -163,40 +174,33 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
                 }
             }
         });
-        new Handler().postDelayed(new Runnable(){
-            @Override
-            public void run() {
-                /* Create an Intent that will start the Menu-Activity. */
-                try {
-                    if (verify())
-                    {
-                        _start();
-                    }
-                    else {
-                        mTrialy.checkTrial(SKU, mTrialyCallback);
-                    }
-                }
-                catch (Exception E){}
-
-            }
-        }, 2000);
-
     }
 
     private boolean verify() {
 
+        if (mIsPremium)
+            return true;
+        else
+            return false;
+
+        /*
         SharedPreferences prefs = getSharedPreferences(IS_PREMIUM, MODE_PRIVATE);
         String is_premium = prefs.getString(MEMBERSHIP, "FALSE");//"No name defined" is the default value.
         if (is_premium.equals("TRUE"))
             return true;
         else
             return false;
+         */
     }
 
     private void upgrade_membership(){
+
         SharedPreferences.Editor editor = getSharedPreferences(IS_PREMIUM, MODE_PRIVATE).edit();
-        editor.putString(MEMBERSHIP, "True");
-        editor.apply();
+        editor.putString(MEMBERSHIP, "TRUE");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+            editor.apply();
+        }
+
     }
 
     private void _start() {
@@ -348,7 +352,32 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
 
 
 
-
+//    IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
+//        public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
+//            Log.d(TAG, "Purchase finished: " + result + ", purchase: "
+//                    + purchase);
+//            if (result.isFailure()) {
+//                complain("Error purchasing: " + result);
+//                // setWaitScreen(false);
+//                return;
+//            }
+//            if (!verifyDeveloperPayload(purchase)) {
+//                complain("Error purchasing. Authenticity verification failed.");
+//                // setWaitScreen(false);
+//                return;
+//            }
+//
+//            Log.d(TAG, "Purchase successful.");
+//
+//
+//            if (purchase.getSku().equals(SKU_PREMIUM)) {
+//                // bought the premium upgrade!
+//                Log.d(TAG, "Purchase is premium upgrade. Congratulating user.");
+//                mIsPremium = true;
+//            }
+//        }
+//
+//        };
     IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
         public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
             Log.d(TAG, "Query inventory finished.");
@@ -375,6 +404,7 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
             mIsPremium = (premiumPurchase != null && verifyDeveloperPayload(premiumPurchase));
             Log.d(TAG, "User is " + (mIsPremium ? "PREMIUM" : "NOT PREMIUM"));
 
+            /*
             // First find out which subscription is auto renewing
             Purchase gasMonthly = inventory.getPurchase(SKU_INFINITE_GAS_MONTHLY);
             Purchase gasYearly = inventory.getPurchase(SKU_INFINITE_GAS_YEARLY);
@@ -389,6 +419,7 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
                 mAutoRenewEnabled = false;
             }
 
+
             // The user is subscribed if either subscription exists, even if neither is auto
             // renewing
             mSubscribedToInfiniteGas = (gasMonthly != null && verifyDeveloperPayload(gasMonthly))
@@ -396,6 +427,8 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
             Log.d(TAG, "User " + (mSubscribedToInfiniteGas ? "HAS" : "DOES NOT HAVE")
                     + " infinite gas subscription.");
             if (mSubscribedToInfiniteGas) mTank = TANK_MAX;
+
+             */
 
             // Check for gas delivery -- if we own gas, we should fill up the tank immediately
 //            Purchase gasPurchase = inventory.getPurchase(SKU_GAS);
@@ -427,6 +460,7 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
         String payload = "";
 
         try {
+            init();
             mHelper.launchPurchaseFlow(this, SKU_PREMIUM, RC_REQUEST,
                     mPurchaseFinishedListener, payload);
         } catch (IabHelper.IabAsyncInProgressException e) {
@@ -549,11 +583,13 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
                 Log.d(TAG, "Purchase is premium upgrade. Congratulating user.");
                 alert("Thank you for Buying App!");
                 mIsPremium = true;
+                upgrade_membership();
 
+                /*
                 SharedPreferences.Editor editor = getSharedPreferences(MEMBERSHIP, MODE_PRIVATE).edit();
                 editor.putString(IS_PREMIUM, "TRUE");
                 editor.apply();
-
+                 */
                 setWaitScreen(false);
             }
         }
@@ -602,6 +638,10 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
         bld.setNeutralButton("OK", null);
         Log.d(TAG, "Showing alert dialog: " + message);
         bld.create().show();
+    }
+
+    public static SplashActivity getInstance(){
+        return self;
     }
 
     @Override

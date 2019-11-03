@@ -82,11 +82,19 @@ public class MusicChooseActivity extends AppCompatActivity {
         mAdapter = new CustomAdapter(arrMusicTitle, getApplicationContext());
         mListMusic.setAdapter(mAdapter);
         ivPurchase = findViewById(R.id.ivPurchase);
+        if (SplashActivity.mIsPremium)
+            ivPurchase.setVisibility(View.INVISIBLE);
+        else
+            ivPurchase.setVisibility(View.VISIBLE);
         ivPurchase.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /*
                 Intent intent = new Intent(MusicChooseActivity.this, PurchaseActivity.class);
                 startActivity(intent);
+
+                 */
+                SplashActivity.getInstance().onUpgradeAppButtonClicked();
             }
         });
         if(!isPermissionGranted()){
