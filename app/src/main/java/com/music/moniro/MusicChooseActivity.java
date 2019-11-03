@@ -50,6 +50,7 @@ public class MusicChooseActivity extends AppCompatActivity {
     private ProgressDialog pDialog;
     public static final int progress_bar_type = 0;
     private String mCurrentMusicName = "";
+    public static MusicChooseActivity self;
 
 
     class SortbyName implements Comparator<MusicItem>
@@ -77,6 +78,7 @@ public class MusicChooseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_choose);
+        self = this;
         mListMusic = findViewById(R.id.list_music);
         arrMusicTitle = new ArrayList<String>();
         mAdapter = new CustomAdapter(arrMusicTitle, getApplicationContext());
@@ -89,11 +91,6 @@ public class MusicChooseActivity extends AppCompatActivity {
         ivPurchase.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*
-                Intent intent = new Intent(MusicChooseActivity.this, PurchaseActivity.class);
-                startActivity(intent);
-
-                 */
                 SplashActivity.getInstance().onUpgradeAppButtonClicked();
             }
         });
@@ -325,6 +322,9 @@ public class MusicChooseActivity extends AppCompatActivity {
     }
     // Read from the database
 
+    public static MusicChooseActivity getInstance(){
+        return self;
+    }
     @Override
     public void onStart() {
         super.onStart();

@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -48,7 +49,7 @@ import static io.trialy.library.Constants.STATUS_TRIAL_RUNNING;
 public class SplashActivity extends AppCompatActivity implements IabBroadcastReceiver.IabBroadcastListener,
         DialogInterface.OnClickListener{
 
-    private String appKEY = "2KUNOKEJX1FUXLUYNQ4";
+    private String appKEY = "ODN7F4TU7GB2A0AQ6KV";
     private String SKU = "saath";
     final String OK = "OK";
     final String BUY_NOW = "BUY NOW";
@@ -109,6 +110,9 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
         self = this;
 
         init();
+
+
+
 
         new Handler().postDelayed(new Runnable(){
             @Override
@@ -286,12 +290,7 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
                     public void onClick(View v) {
 //                        Intent intent = new Intent(SplashActivity.this, payment_activity.class);
 //                        startActivity(intent);
-                        if (InvalidDeveice){
-                            showDialog("Invalid Device","Your Device isn't supprot google Billing.",CLOSE);
-                        }
-                        else {
-                            onUpgradeAppButtonClicked();
-                        }
+                        onUpgradeAppButtonClicked();
 //                        finish();
                         dialog.dismiss();
                     }
@@ -451,21 +450,38 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
 
 
     public void onUpgradeAppButtonClicked() {
-        Log.d(TAG, "Upgrade button clicked; launching purchase flow for upgrade.");
-        setWaitScreen(true);
+        init();
+        if (InvalidDeveice){
+            try {
+                showDialog("Invalid Device", "Your Device isn't supprot google Billing.", CLOSE);
+            }catch (Exception E){
+                Log.e("Error", E.toString());
+            }
+            try {
+                Toast.makeText(MusicChooseActivity.getInstance(),"Your Device isn't supprot google Billing.", Toast.LENGTH_LONG).show();
+            }catch (Exception E){
+                Log.e("Error", E.toString());
+            }
 
-        /* TODO: for security, generate your payload here for verification. See the comments on
-         *        verifyDeveloperPayload() for more info. Since this is a SAMPLE, we just use
-         *        an empty string, but on a production app you should carefully generate this. */
-        String payload = "";
+        }
+        else {
+            onUpgradeAppButtonClicked();
 
-        try {
-            init();
-            mHelper.launchPurchaseFlow(this, SKU_PREMIUM, RC_REQUEST,
-                    mPurchaseFinishedListener, payload);
-        } catch (IabHelper.IabAsyncInProgressException e) {
-            complain("Error launching purchase flow. Another async operation in progress.");
-            setWaitScreen(false);
+            Log.d(TAG, "Upgrade button clicked; launching purchase flow for upgrade.");
+            setWaitScreen(true);
+
+            /* TODO: for security, generate your payload here for verification. See the comments on
+             *        verifyDeveloperPayload() for more info. Since this is a SAMPLE, we just use
+             *        an empty string, but on a production app you should carefully generate this. */
+            String payload = "";
+
+            try {
+                mHelper.launchPurchaseFlow(this, SKU_PREMIUM, RC_REQUEST,
+                        mPurchaseFinishedListener, payload);
+            } catch (IabHelper.IabAsyncInProgressException e) {
+                complain("Error launching purchase flow. Another async operation in progress.");
+                setWaitScreen(false);
+            }
         }
     }
 
