@@ -82,7 +82,8 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
     String mSelectedSubscriptionPeriod = "";
 
     // SKUs for our products: the premium upgrade (non-consumable) and gas (consumable)
-    static final String SKU_PREMIUM = "premium";
+    static final String SKU_PREMIUM = "membership_premium";
+
 
     // SKU for our subscription (infinite gas)
     static final String SKU_INFINITE_GAS_MONTHLY = "infinite_gas_monthly";
