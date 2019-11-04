@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import static com.music.monir.payment.util.Global.mIsPremium;
+
 public class MusicChooseActivity extends AppCompatActivity {
 
     private ListView mListMusic;
@@ -84,14 +86,17 @@ public class MusicChooseActivity extends AppCompatActivity {
         mAdapter = new CustomAdapter(arrMusicTitle, getApplicationContext());
         mListMusic.setAdapter(mAdapter);
         ivPurchase = findViewById(R.id.ivPurchase);
-        if (SplashActivity.mIsPremium)
+        if (mIsPremium)
             ivPurchase.setVisibility(View.INVISIBLE);
         else
             ivPurchase.setVisibility(View.VISIBLE);
         ivPurchase.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SplashActivity.getInstance().onUpgradeAppButtonClicked();
+                Intent intent  = new Intent(MusicChooseActivity.this, PurchaseActivity.class);
+                intent.putExtra("BASE","BUY");
+                startActivity(intent);
+//                SplashActivity.getInstance().onUpgradeAppButtonClicked();
             }
         });
         if(!isPermissionGranted()){
