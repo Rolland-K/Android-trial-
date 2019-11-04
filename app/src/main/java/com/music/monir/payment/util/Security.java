@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.music.moniro.payment.util;
+package com.music.monir.payment.util;
 
 import android.text.TextUtils;
 import android.util.Base64;

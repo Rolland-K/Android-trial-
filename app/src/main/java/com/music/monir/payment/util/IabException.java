@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.music.moniro.payment.util;
+package com.music.monir.payment.util;
 
 /**
  * Exception thrown when something went wrong with in-app billing.

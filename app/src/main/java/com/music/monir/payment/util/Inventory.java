@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.music.moniro.payment.util;
+package com.music.monir.payment.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
