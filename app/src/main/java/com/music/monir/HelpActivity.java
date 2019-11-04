@@ -1,4 +1,4 @@
-package com.music.moniro;
+package com.music.monir;
 
 import android.os.Bundle;
 import android.util.Log;

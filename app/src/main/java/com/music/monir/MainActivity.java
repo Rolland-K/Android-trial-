@@ -1,4 +1,4 @@
-package com.music.moniro;
+package com.music.monir;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;

@@ -1,18 +1,23 @@
-package com.music.moniro;
+package com.music.monir;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.core.app.ActivityCompat;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -27,55 +32,87 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
-public class TanpuraChooseActivity extends AppCompatActivity {
+public class MusicChooseActivity extends AppCompatActivity {
 
     private ListView mListMusic;
     private CustomAdapter mAdapter;
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
-    private ArrayList<TanpuraItem> arrMusicItems;
+    private ArrayList<MusicItem> arrMusicItems;
     private ArrayList<String> arrMusicTitle;
-
+    private ImageView ivPurchase;
     protected final int STORAGE_PERMISSIONS_REQUEST_CODE = 100;
 
     // Progress Dialog
     private ProgressDialog pDialog;
     public static final int progress_bar_type = 0;
     private String mCurrentMusicName = "";
-    private String mCurrentTanuraName = "";
+    public static MusicChooseActivity self;
 
-    private boolean isDownloading = false;
+
+    class SortbyName implements Comparator<MusicItem>
+    {
+        // Used for sorting in ascending order of
+        // roll number
+        public int compare(MusicItem a, MusicItem b)
+        {
+            return a.toString().compareTo(b.toString());
+        }
+    }
+
+
+    class SortbyString implements Comparator<String>
+    {
+        // Used for sorting in ascending order of
+        // roll number
+        public int compare(String a, String b)
+        {
+            return a.compareTo(b);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_tanpura_choose);
+        setContentView(R.layout.activity_music_choose);
+        self = this;
         mListMusic = findViewById(R.id.list_music);
         arrMusicTitle = new ArrayList<String>();
         mAdapter = new CustomAdapter(arrMusicTitle, getApplicationContext());
         mListMusic.setAdapter(mAdapter);
-        Intent intent = getIntent();
-        if (intent.hasExtra("filename")) {
-            mCurrentMusicName = intent.getStringExtra("filename");
-            Log.e("fe", mCurrentMusicName);
+        ivPurchase = findViewById(R.id.ivPurchase);
+        if (SplashActivity.mIsPremium)
+            ivPurchase.setVisibility(View.INVISIBLE);
+        else
+            ivPurchase.setVisibility(View.VISIBLE);
+        ivPurchase.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SplashActivity.getInstance().onUpgradeAppButtonClicked();
+            }
+        });
+        if(!isPermissionGranted()){
+            requestPermissions();
         }
-        arrMusicItems = new ArrayList<TanpuraItem>();
+
+        arrMusicItems = new ArrayList<MusicItem>();
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference();
-        mDatabase.child("tanpura").addChildEventListener(new ChildEventListener(){
+        mDatabase.child("convalidaciones").addChildEventListener(new ChildEventListener(){
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                TanpuraItem item = dataSnapshot.getValue(TanpuraItem.class);
+                MusicItem item = dataSnapshot.getValue(MusicItem.class);
                 arrMusicItems.add(item);
                 arrMusicTitle.add(item.toString());
+                //arrMusicItems = sortByName(arrMusicItems);
+                Collections.sort(arrMusicTitle, new SortbyString());
+                Collections.sort(arrMusicItems, new SortbyName());
                 mAdapter = new CustomAdapter(arrMusicTitle, getApplicationContext());
                 mListMusic.setAdapter(mAdapter);
-                mCurrentTanuraName = item.toString();
-                if(!isDownloading){
-                    isDownloading = true;
-                    new TanpuraChooseActivity.DownloadFileFromURL().execute(item.getUrl());
-                }
+
             }
 
             @Override
@@ -102,10 +139,56 @@ public class TanpuraChooseActivity extends AppCompatActivity {
         mListMusic.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                mCurrentMusicName = arrMusicItems.get(position).toString();
+
+                mCurrentMusicName = arrMusicItems.get(position).toString();
                 new DownloadFileFromURL().execute(arrMusicItems.get(position).getUrl());
             }
         });
+    }
+
+
+    public ArrayList<MusicItem> sortByName ( ArrayList<MusicItem> contacts)
+    {
+        String contactName1, contactName2;
+
+        for (int i = 0; i < contacts.size ( ); i++ )
+        {
+            contactName1 = contacts.get (i).toString();
+            for (int n = i + 1; n < contacts.size ( )-1; n++ )
+            {
+                contactName2 = contacts.get (n).toString ( );
+
+                if (contactName1.compareToIgnoreCase (contactName2) > 0)
+                {
+                    MusicItem temp = contacts.get (i);
+                    contacts.set (i, contacts.get (n));
+                    contacts.set (n, temp);
+                }
+            }
+        }
+        return contacts;
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case 0: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+            // other 'case' lines to check for other
+            // permissions this app might request.
+        }
     }
 
 
@@ -114,7 +197,7 @@ public class TanpuraChooseActivity extends AppCompatActivity {
         switch (id) {
             case progress_bar_type: // we set this to 0
                 pDialog = new ProgressDialog(this);
-                pDialog.setMessage("Downloading Tanpura file. Please wait...");
+                pDialog.setMessage("Downloading file. Please wait...");
                 pDialog.setIndeterminate(false);
                 pDialog.setMax(100);
                 pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -160,7 +243,7 @@ public class TanpuraChooseActivity extends AppCompatActivity {
                         8192);
 
                 // Output stream
-                OutputStream output = new FileOutputStream(getExternalFilesDir(null).getAbsoluteFile() + "/tanpura.mp3");
+                OutputStream output = new FileOutputStream(getExternalFilesDir(null).getAbsoluteFile() + "/temp.mp3");
 
                 byte data[] = new byte[1024];
 
@@ -205,18 +288,43 @@ public class TanpuraChooseActivity extends AppCompatActivity {
         protected void onPostExecute(String file_url) {
             // dismiss the dialog after the file was downloaded
             dismissDialog(progress_bar_type);
-            Intent intent = new Intent(TanpuraChooseActivity.this, MainActivity.class);
+            Intent intent = new Intent(MusicChooseActivity.this, TanpuraChooseActivity.class);
             intent.putExtra("filename", mCurrentMusicName);
-            intent.putExtra("tanpura", mCurrentTanuraName);
             startActivity(intent);
-            finish();
 
         }
     }
 
 
+    protected boolean isPermissionGranted() {
+        int read;
+        read = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        return read == PackageManager.PERMISSION_GRANTED;
+    }
+
+
+    protected void requestPermissions() {
+
+        boolean shouldProvideRationale =
+                ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        Manifest.permission.READ_EXTERNAL_STORAGE);
+        ActivityCompat.shouldShowRequestPermissionRationale(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        // Request permission. It's possible this can be auto answered if device policy
+        // sets the permission in a given state or the user denied the permission
+        // previously and checked "Never ask again".
+        ActivityCompat.requestPermissions(this, new String[]{
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+        }, STORAGE_PERMISSIONS_REQUEST_CODE);
+
+    }
     // Read from the database
 
+    public static MusicChooseActivity getInstance(){
+        return self;
+    }
     @Override
     public void onStart() {
         super.onStart();
@@ -225,5 +333,17 @@ public class TanpuraChooseActivity extends AppCompatActivity {
 
     }
 
-
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this)
+                .setMessage("Are you sure you want to exit?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        MusicChooseActivity.super.onBackPressed();
+                    }
+                })
+                .setNegativeButton("No", null)
+                .show();
+    }
 }

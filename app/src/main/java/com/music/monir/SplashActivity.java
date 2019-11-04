@@ -1,4 +1,4 @@
-package com.music.moniro;
+package com.music.monir;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -27,11 +27,11 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 
-import com.music.moniro.payment.util.IabBroadcastReceiver;
-import com.music.moniro.payment.util.IabHelper;
-import com.music.moniro.payment.util.IabResult;
-import com.music.moniro.payment.util.Inventory;
-import com.music.moniro.payment.util.Purchase;
+import com.music.monir.payment.util.IabBroadcastReceiver;
+import com.music.monir.payment.util.IabHelper;
+import com.music.monir.payment.util.IabResult;
+import com.music.monir.payment.util.Inventory;
+import com.music.monir.payment.util.Purchase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -243,7 +243,7 @@ public class SplashActivity extends AppCompatActivity implements IabBroadcastRec
                     daysRemaining = Math.round(timeRemaining / (60 * 60 * 24));
                     //Toast.makeText(SplashActivity.this,"Not Started" + String.valueOf(daysRemaining), Toast.LENGTH_SHORT).show();
                     //The user hasn't requested a trial yet - no need to do anything
-                    showDialog("Trial Mode", String.format(Locale.ENGLISH, "You can try premium features for 14 days."), START_TRIAL);
+                    showDialog("Trial Mode", String.format(Locale.ENGLISH, "Do you want trial?"), START_TRIAL);
                     break;
                 case STATUS_TRIAL_OVER:
                     showDialog("Trial Ended", String.format(Locale.ENGLISH, "Your Trial is ended. please buy to continue premium features"), BUY_NOW);
