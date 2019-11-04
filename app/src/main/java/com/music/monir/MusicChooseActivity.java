@@ -53,7 +53,7 @@ public class MusicChooseActivity extends AppCompatActivity {
     public static final int progress_bar_type = 0;
     private String mCurrentMusicName = "";
     public static MusicChooseActivity self;
-
+    String MEMBERSHIP = "membership";
 
     class SortbyName implements Comparator<MusicItem>
     {
@@ -86,10 +86,12 @@ public class MusicChooseActivity extends AppCompatActivity {
         mAdapter = new CustomAdapter(arrMusicTitle, getApplicationContext());
         mListMusic.setAdapter(mAdapter);
         ivPurchase = findViewById(R.id.ivPurchase);
-        if (mIsPremium)
-            ivPurchase.setVisibility(View.INVISIBLE);
-        else
+        Intent intent = getIntent();
+        if (intent.getStringExtra(MEMBERSHIP).equals("Trial"))
             ivPurchase.setVisibility(View.VISIBLE);
+        else
+            ivPurchase.setVisibility(View.INVISIBLE);
+
         ivPurchase.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

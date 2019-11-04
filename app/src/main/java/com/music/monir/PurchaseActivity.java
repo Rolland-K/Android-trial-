@@ -152,6 +152,7 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
             editor.apply();
         }
+        finish();
 
     }
     private void define_usermembership(){
@@ -160,8 +161,10 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
             editor.apply();
         }
-        if (check)
+        if (check) {
+            Log.e("Define","Check membership");
             finish();
+        }
     }
 
     IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {

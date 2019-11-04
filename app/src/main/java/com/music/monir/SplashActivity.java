@@ -79,7 +79,7 @@ public class SplashActivity extends AppCompatActivity {
                 try {
                     switch (verify()){
                         case 2:
-                            _start();
+                            _start("Premium");
                             break;
                         case 1:
                             mTrialy.checkTrial(SKU, mTrialyCallback);
@@ -114,8 +114,9 @@ public class SplashActivity extends AppCompatActivity {
         return null;
     }
 
-    private void _start() {
+    private void _start(String membership) {
         Intent mainIntent = new Intent(SplashActivity.this, MusicChooseActivity.class);
+        mainIntent.putExtra(MEMBERSHIP,membership);
         startActivity(mainIntent);
         finish();
     }
@@ -150,7 +151,7 @@ public class SplashActivity extends AppCompatActivity {
                     daysRemaining = Math.round(timeRemaining / (60 * 60 * 24));
                     //Toast.makeText(SplashActivity.this,"Not Started" + String.valueOf(daysRemaining), Toast.LENGTH_SHORT).show();
                     //The user hasn't requested a trial yet - no need to do anything
-                    showDialog("Trial Mode", String.format(Locale.ENGLISH, "Do you want trial?"), START_TRIAL);
+                    showDialog("Trial Mode", String.format(Locale.ENGLISH, "Do you want to start the trial?"), START_TRIAL);
                     break;
                 case STATUS_TRIAL_OVER:
 //                    showDialog("Trial Ended", String.format(Locale.ENGLISH, "Your Trial is ended. please buy to continue premium features"), BUY_NOW);
@@ -191,7 +192,7 @@ public class SplashActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         dialog.dismiss();
-                        _start();
+                        _start("Trial");
                     }
                 });
                 break;
@@ -255,7 +256,7 @@ public class SplashActivity extends AppCompatActivity {
         notificationBuilder.setSmallIcon(R.drawable.icon);
 
         notificationManager.notify(1, notificationBuilder.build());
-        _start();
+        _start("Trial");
     }
     @Override
     public void onResume() {
