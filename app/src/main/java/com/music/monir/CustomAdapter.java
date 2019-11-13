@@ -56,7 +56,11 @@ public class CustomAdapter extends ArrayAdapter<String> {
         result.startAnimation(animation);
         lastPosition = position;
 
-        viewHolder.title.setText(dataModel);
+        /*
+         * Nov 13 2019
+         * Change item name simply.
+         */
+        viewHolder.title.setText(dataModel.split("_")[2]);
 
         // Return the completed view to render on screen
         return convertView;

@@ -20,6 +20,29 @@
         android:textColor="#9e005d"
         android:text="choose your music"
         />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/border"
+        android:orientation="horizontal">
+
+        <Spinner
+            android:id="@+id/spin_firstname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:layout_weight="1" />
+
+        <Spinner
+            android:id="@+id/spin_secondname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_weight="1" />
+    </LinearLayout>
+
     <ListView
         android:layout_marginTop="20dp"
         android:id="@+id/list_music"

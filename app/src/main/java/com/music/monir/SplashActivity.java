@@ -130,7 +130,7 @@ public class SplashActivity extends AppCompatActivity {
                     //The trial has just started - enable the premium features for the user
                     daysRemaining = Math.round(timeRemaining / (60 * 60 * 24));
                     //Toast.makeText(SplashActivity.this,"Just started" + String.valueOf(daysRemaining), Toast.LENGTH_SHORT).show();
-                    showDialog("Trial started", String.format(Locale.ENGLISH, "You can now try the premium features for %d days",  daysRemaining), OK);
+                    showDialog("Trial started", String.format(Locale.ENGLISH, "You can try trial for %d days",  daysRemaining), OK);
                     break;
                 case STATUS_TRIAL_RUNNING:
                     //The trial is currently running - enable the premium features for the user
@@ -145,7 +145,7 @@ public class SplashActivity extends AppCompatActivity {
                     //The trial has just ended - block access to the premium features
                     daysRemaining = Math.round(timeRemaining / (60 * 60 * 24));
                     //Toast.makeText(SplashActivity.this,"Ended" + String.valueOf(daysRemaining), Toast.LENGTH_SHORT).show();
-                    showDialog("Trial Ended", String.format(Locale.ENGLISH, "Your Trial is just ended. please buy to continue premium features"), BUY_NOW);
+                    showDialog("Trial Ended", String.format(Locale.ENGLISH, "Your Trial is just ended. please buy to continue"), BUY_NOW);
                     break;
                 case STATUS_TRIAL_NOT_YET_STARTED:
                     daysRemaining = Math.round(timeRemaining / (60 * 60 * 24));

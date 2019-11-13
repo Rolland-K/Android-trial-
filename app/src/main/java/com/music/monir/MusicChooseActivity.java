@@ -14,6 +14,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Spinner;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,8 +37,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import static com.music.monir.payment.util.Global.mIsPremium;
-
 public class MusicChooseActivity extends AppCompatActivity {
 
     private ListView mListMusic;
@@ -44,8 +44,19 @@ public class MusicChooseActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
     private ArrayList<MusicItem> arrMusicItems;
-    private ArrayList<String> arrMusicTitle;
+    private ArrayList<String> arrMusicTitle = new ArrayList<String>();
+    private ArrayList<String> arrFilteredTitle = new ArrayList<String>();
+    private ArrayList<String> arrFilteredsecibdTitle = new ArrayList<String>();
+    private ArrayList<String> arrFilteredSecondName = new ArrayList<String>();
+    private ArrayList<String> arrFirstName = new ArrayList<String>();
+
     private ImageView ivPurchase;
+
+    private Spinner mFirstName;
+    CustomSpinnerAdapter spinnerArrayAdapter;
+    CustomSpinnerAdapter spinnerArraySecondAdapter;
+    private Spinner mSecondName;
+    public boolean set_filter;
     protected final int STORAGE_PERMISSIONS_REQUEST_CODE = 100;
 
     // Progress Dialog
@@ -82,6 +93,8 @@ public class MusicChooseActivity extends AppCompatActivity {
         setContentView(R.layout.activity_music_choose);
         self = this;
         mListMusic = findViewById(R.id.list_music);
+        mFirstName = findViewById(R.id.spin_firstname);
+        mSecondName = findViewById(R.id.spin_secondname);
         arrMusicTitle = new ArrayList<String>();
         mAdapter = new CustomAdapter(arrMusicTitle, getApplicationContext());
         mListMusic.setAdapter(mAdapter);
@@ -105,6 +118,7 @@ public class MusicChooseActivity extends AppCompatActivity {
             requestPermissions();
         }
 
+
         arrMusicItems = new ArrayList<MusicItem>();
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference();
@@ -117,6 +131,13 @@ public class MusicChooseActivity extends AppCompatActivity {
                 //arrMusicItems = sortByName(arrMusicItems);
                 Collections.sort(arrMusicTitle, new SortbyString());
                 Collections.sort(arrMusicItems, new SortbyName());
+
+                if (is_new(item.toString().split("_")[0],arrFirstName))
+                {
+                    arrFirstName.add(item.toString().split("_")[0]);
+                    Log.e("Check if it is running",item.toString().split("_")[0]);
+                    setadapter(arrFirstName,mFirstName);
+                }
                 mAdapter = new CustomAdapter(arrMusicTitle, getApplicationContext());
                 mListMusic.setAdapter(mAdapter);
 
@@ -149,6 +170,29 @@ public class MusicChooseActivity extends AppCompatActivity {
 
                 mCurrentMusicName = arrMusicItems.get(position).toString();
                 new DownloadFileFromURL().execute(arrMusicItems.get(position).getUrl());
+            }
+        });
+
+        mFirstName.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                filter_first(arrFirstName.get(position));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+        mSecondName.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                filter_second(mFirstName.getSelectedItem().toString(),mSecondName.getSelectedItem().toString());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
             }
         });
     }
@@ -352,5 +396,58 @@ public class MusicChooseActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("No", null)
                 .show();
+    }
+
+    /*
+     * check if new item
+     */
+    private boolean is_new(String item_name, ArrayList<String> array_list){
+        boolean is_new = true;
+        for ( int i = 0; i < array_list.size(); i ++){
+            if (item_name.equals(array_list.get(i)))
+            {
+                is_new = false;
+                break;
+            }
+        }
+        return is_new;
+
+    }
+
+    private void setadapter(ArrayList<String> arrayname, Spinner spinner){
+        Collections.sort(arrayname, new SortbyString());
+        spinnerArrayAdapter = new CustomSpinnerAdapter(this,R.layout.spinner_text_item,arrayname);
+        spinner.setAdapter(spinnerArrayAdapter);
+    }
+
+    private void filter_first(String item){
+        arrFilteredTitle.clear();
+        arrFilteredSecondName.clear();
+        for (int i = 0; i < arrMusicTitle.size(); i ++){
+            if (arrMusicTitle.get(i).split("_")[0].equals(item))
+            {
+                arrFilteredTitle.add(arrMusicTitle.get(i));
+                if(is_new(arrMusicTitle.get(i).split("_")[1],arrFilteredSecondName))
+                    arrFilteredSecondName.add(arrMusicTitle.get(i).split("_")[1]);
+            }
+        }
+
+        mAdapter = new CustomAdapter(arrFilteredTitle, getApplicationContext());
+        mListMusic.setAdapter(mAdapter);
+        setadapter(arrFilteredSecondName,mSecondName);
+    }
+
+    private void filter_second(String firstitem, String seconditem){
+        arrFilteredsecibdTitle.clear();
+        for (int i = 0; i < arrMusicTitle.size(); i ++){
+            if (arrMusicTitle.get(i).split("_")[0].equals(firstitem)
+                    && arrMusicTitle.get(i).split("_")[1].equals(seconditem) )
+            {
+                arrFilteredsecibdTitle.add(arrMusicTitle.get(i));
+            }
+        }
+
+        mAdapter = new CustomAdapter(arrFilteredsecibdTitle, getApplicationContext());
+        mListMusic.setAdapter(mAdapter);
     }
 }
