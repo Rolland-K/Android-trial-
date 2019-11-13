@@ -96,8 +96,8 @@ public class MusicChooseActivity extends AppCompatActivity {
         mFirstName = findViewById(R.id.spin_firstname);
         mSecondName = findViewById(R.id.spin_secondname);
         arrMusicTitle = new ArrayList<String>();
-        mAdapter = new CustomAdapter(arrMusicTitle, getApplicationContext());
-        mListMusic.setAdapter(mAdapter);
+//        mAdapter = new CustomAdapter(arrMusicTitle, getApplicationContext());
+//        mListMusic.setAdapter(mAdapter);
         ivPurchase = findViewById(R.id.ivPurchase);
         Intent intent = getIntent();
         if (intent.getStringExtra(MEMBERSHIP).equals("Trial"))
@@ -138,8 +138,8 @@ public class MusicChooseActivity extends AppCompatActivity {
                     Log.e("Check if it is running",item.toString().split("_")[0]);
                     setadapter(arrFirstName,mFirstName);
                 }
-                mAdapter = new CustomAdapter(arrMusicTitle, getApplicationContext());
-                mListMusic.setAdapter(mAdapter);
+//                mAdapter = new CustomAdapter(arrMusicTitle, getApplicationContext());
+//                mListMusic.setAdapter(mAdapter);
 
             }
 
@@ -432,8 +432,8 @@ public class MusicChooseActivity extends AppCompatActivity {
             }
         }
 
-        mAdapter = new CustomAdapter(arrFilteredTitle, getApplicationContext());
-        mListMusic.setAdapter(mAdapter);
+//        mAdapter = new CustomAdapter(arrFilteredTitle, getApplicationContext());
+//        mListMusic.setAdapter(mAdapter);
         setadapter(arrFilteredSecondName,mSecondName);
     }
 
@@ -441,7 +441,7 @@ public class MusicChooseActivity extends AppCompatActivity {
         arrFilteredsecibdTitle.clear();
         for (int i = 0; i < arrMusicTitle.size(); i ++){
             if (arrMusicTitle.get(i).split("_")[0].equals(firstitem)
-                    && arrMusicTitle.get(i).split("_")[1].equals(seconditem) )
+                    && arrMusicTitle.get(i).split("_")[1].equals(seconditem) && !arrMusicTitle.get(i).split("_")[2].equals(""))
             {
                 arrFilteredsecibdTitle.add(arrMusicTitle.get(i));
             }

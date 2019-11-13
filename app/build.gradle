@@ -8,8 +8,8 @@ android {
         applicationId "com.music.monir"
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 28
-        versionName "1.1.15"
+        versionCode 29
+        versionName "1.1.16"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 

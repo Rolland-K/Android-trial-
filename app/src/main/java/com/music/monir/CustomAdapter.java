@@ -60,7 +60,10 @@ public class CustomAdapter extends ArrayAdapter<String> {
          * Nov 13 2019
          * Change item name simply.
          */
-        viewHolder.title.setText(dataModel.split("_")[2]);
+        String name = dataModel.split("_")[2];
+//                    ? dataModel.split("_")[1]
+//                    : dataModel.split("_")[2];
+        viewHolder.title.setText(name);
 
         // Return the completed view to render on screen
         return convertView;
