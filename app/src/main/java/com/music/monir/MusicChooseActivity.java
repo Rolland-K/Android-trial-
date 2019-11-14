@@ -169,7 +169,21 @@ public class MusicChooseActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 mCurrentMusicName = arrMusicItems.get(position).toString();
-                new DownloadFileFromURL().execute(arrMusicItems.get(position).getUrl());
+                String selected_name = arrFilteredsecibdTitle.get(position);
+                for (int i = 0; i < arrMusicItems.size(); i ++){
+                    MusicItem item = arrMusicItems.get(i);
+                    if ((item.getInstrument().toString()
+                            + "_"
+                            +item.getBeats().toString())
+                            .equals(selected_name.split("_")[0]
+                            + "_"
+                            +selected_name.split("_")[1]))
+                    {
+                        new DownloadFileFromURL().execute(arrMusicItems.get(i).getUrl());
+                        break;
+                    }
+                }
+
             }
         });
 
@@ -441,7 +455,8 @@ public class MusicChooseActivity extends AppCompatActivity {
         arrFilteredsecibdTitle.clear();
         for (int i = 0; i < arrMusicTitle.size(); i ++){
             if (arrMusicTitle.get(i).split("_")[0].equals(firstitem)
-                    && arrMusicTitle.get(i).split("_")[1].equals(seconditem) && !arrMusicTitle.get(i).split("_")[2].equals(""))
+                    && arrMusicTitle.get(i).split("_")[1].equals(seconditem) )
+//                !arrMusicTitle.get(i).split("_")[2].equals("")
             {
                 arrFilteredsecibdTitle.add(arrMusicTitle.get(i));
             }

@@ -16,39 +16,44 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center"
                 android:text="credits:"
                 android:textColor="#9e005d"
-                android:gravity="center"
-                android:textSize="24dp"/>
+                android:textSize="24dp"
+                android:visibility="gone" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
                 android:text="SaathSangeet"
                 android:textColor="#9e005d"
-                android:gravity="center"
-                android:textSize="24dp"/>
+                android:textSize="24dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center"
                 android:text="Version: 1.0"
                 android:textColor="#9e005d"
-                android:gravity="center"
-                android:textSize="24dp"/>
+                android:textSize="24dp"
+                android:visibility="gone" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Artists Info"
                 android:layout_marginTop="20dp"
-                android:textColor="#9e005d"
                 android:gravity="center"
+                android:text="Artists Info"
+                android:textColor="#9e005d"
+                android:textSize="28dp"
                 android:textStyle="bold"
-                android:textSize="28dp"/>
+                android:visibility="gone" />
 
             <ListView
                 android:id="@+id/list_artist"
