@@ -8,8 +8,8 @@ android {
         applicationId "com.music.monir"
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 29
-        versionName "1.1.16"
+        versionCode 34
+        versionName "1.2.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -42,11 +42,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.github.bumptech.glide:glide:4.7.1'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
-
     implementation 'io.trialy.library:trialy:1.0.9'
-
     implementation 'com.google.android.gms:play-services-wallet:18.0.0'
-
     implementation 'com.android.billingclient:billing:2.0.3'
 
 }

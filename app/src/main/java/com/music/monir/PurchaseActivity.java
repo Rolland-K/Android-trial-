@@ -1,13 +1,17 @@
 package com.music.monir;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -23,8 +27,14 @@ import com.music.monir.payment.util.IabResult;
 import com.music.monir.payment.util.Inventory;
 import com.music.monir.payment.util.Purchase;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static com.music.monir.payment.util.Global.mIsPremium;
 
@@ -382,6 +392,7 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
                 alert("Thank you for Buying App!");
                 mIsPremium = true;
                 upgrade_membership();
+                make_license_file();
 
                 /*
                 SharedPreferences.Editor editor = getSharedPreferences(MEMBERSHIP, MODE_PRIVATE).edit();
@@ -470,4 +481,92 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
     }
 
 
+
+    public String Create_license(String imei) {
+
+
+
+        Random generator = new Random();
+        StringBuilder randomStringBuilder = new StringBuilder();
+        char tempChar;
+        for (int i = 0; i < 200; i++){
+            tempChar = (char) (generator.nextInt(96) + 32);
+            randomStringBuilder.append(tempChar);
+        }
+        int min = 50;
+        int max = 180;
+        ArrayList<Integer> index = new ArrayList<>();
+        while (index.size()<imei.length() + 1) {
+            Random r = new Random();
+            int rand = r.nextInt(max - min + 1) + min;
+            boolean uniqure = true;
+            for (int i = 0; i < index.size(); i++) {
+                if (index.get(i) == rand) {
+                    uniqure = false;
+                    break;
+                }
+            }
+            if (uniqure)
+                index.add(rand);
+        }
+        Log.e("tag",String.valueOf(index));
+        StringBuilder key = new StringBuilder(imei);
+        for (int i = 0; i < imei.length(); i ++){
+            randomStringBuilder.setCharAt(index.get(i),key.charAt(i));
+        }
+        Log.e("new", String.valueOf(randomStringBuilder));
+        String secret_index = "";
+        for (int i = 0; i < imei.length(); i ++){
+            secret_index += index.get(i).toString().length()+index.get(i).toString();
+        }
+        Log.e("index",secret_index);
+        return secret_index + " : "+ randomStringBuilder.toString();
+    }
+
+
+    public void make_license_file(){
+
+        String device_imei = "";
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q)
+        {
+            device_imei = Settings.System.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        }
+        else {
+            TelephonyManager TelephonyMgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    Activity#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for Activity#requestPermissions for more details.
+
+                }
+            }
+            device_imei = TelephonyMgr.getDeviceId();
+        }
+        File root = android.os.Environment.getExternalStorageDirectory();
+        File dir = new File (root.getAbsolutePath() + "/saathsangeet");
+        dir.mkdirs();
+        File file = new File(dir, "License.so");
+
+        try {
+            FileOutputStream f = new FileOutputStream(file);
+            PrintWriter pw = new PrintWriter(f);
+            pw.println(Create_license(device_imei));
+            pw.flush();
+            pw.close();
+            f.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            Log.i("TAG", "******* File not found. Did you" +
+                    " add a WRITE_EXTERNAL_STORAGE permission to the   manifest?");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

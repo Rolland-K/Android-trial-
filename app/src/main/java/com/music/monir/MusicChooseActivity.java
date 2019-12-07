@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -28,6 +29,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -65,6 +67,7 @@ public class MusicChooseActivity extends AppCompatActivity {
     private String mCurrentMusicName = "";
     public static MusicChooseActivity self;
     String MEMBERSHIP = "membership";
+    private SharedPreferences pref;
 
     class SortbyName implements Comparator<MusicItem>
     {
@@ -75,7 +78,6 @@ public class MusicChooseActivity extends AppCompatActivity {
             return a.toString().compareTo(b.toString());
         }
     }
-
 
     class SortbyString implements Comparator<String>
     {
@@ -92,6 +94,7 @@ public class MusicChooseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_choose);
         self = this;
+        pref = getSharedPreferences("DATA", MODE_PRIVATE);
         mListMusic = findViewById(R.id.list_music);
         mFirstName = findViewById(R.id.spin_firstname);
         mSecondName = findViewById(R.id.spin_secondname);
@@ -168,22 +171,26 @@ public class MusicChooseActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                mCurrentMusicName = arrMusicItems.get(position).toString();
+
                 String selected_name = arrFilteredsecibdTitle.get(position);
                 for (int i = 0; i < arrMusicItems.size(); i ++){
                     MusicItem item = arrMusicItems.get(i);
                     if ((item.getInstrument().toString()
                             + "_"
-                            +item.getBeats().toString())
+                            +item.getBeats().toString()
+                            + "_"
+                            +item.getSong().toString())
                             .equals(selected_name.split("_")[0]
                             + "_"
-                            +selected_name.split("_")[1]))
+                            +selected_name.split("_")[1]
+                            + "_"
+                            +selected_name.split("_")[2]))
                     {
+                        mCurrentMusicName = arrMusicItems.get(i).toString();
                         new DownloadFileFromURL().execute(arrMusicItems.get(i).getUrl());
                         break;
                     }
                 }
-
             }
         });
 
@@ -353,9 +360,23 @@ public class MusicChooseActivity extends AppCompatActivity {
         protected void onPostExecute(String file_url) {
             // dismiss the dialog after the file was downloaded
             dismissDialog(progress_bar_type);
-            Intent intent = new Intent(MusicChooseActivity.this, TanpuraChooseActivity.class);
-            intent.putExtra("filename", mCurrentMusicName);
-            startActivity(intent);
+
+            File file = new File(getExternalFilesDir(null).getAbsoluteFile() + "/tanpura.mp3");
+            if (file.exists())
+            {
+                String tanpura = pref.getString("tanpura_name", "");
+                Intent intent = new Intent(MusicChooseActivity.this, MainActivity.class);
+                intent.putExtra("filename", mCurrentMusicName);
+                intent.putExtra("tanpura", tanpura);
+                startActivity(intent);
+            }
+            else {
+                Intent intent = new Intent(MusicChooseActivity.this, TanpuraChooseActivity.class);
+                intent.putExtra("filename", mCurrentMusicName);
+                startActivity(intent);
+            }
+
+
 
         }
     }

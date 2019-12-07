@@ -1,5 +1,6 @@
 package com.music.monir;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -11,11 +12,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.provider.Settings;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -25,6 +30,7 @@ import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
 import com.music.monir.payment.util.Global;
@@ -34,6 +40,10 @@ import com.music.monir.payment.util.IabResult;
 import com.music.monir.payment.util.Inventory;
 import com.music.monir.payment.util.Purchase;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -61,6 +71,8 @@ public class SplashActivity extends AppCompatActivity {
 
     String MEMBERSHIP = "membership";
     String IS_PREMIUM = "5RZZJLZVF5";
+    Integer MY_PERMISSIONS_REQUEST_READ_STATE = 0;
+    Integer MY_PERMISSIONS_REQUEST_READ_EXTERNAL = 1;
 
     public static SplashActivity self;
 
@@ -68,10 +80,31 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-        /* New Handler to start the Menu-Activity
-         * and close this Splash-Screen after some seconds.*/
-        mTrialy = new Trialy(this, appKEY);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    Activity#requestPermissions
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_PHONE_STATE,Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        MY_PERMISSIONS_REQUEST_READ_STATE);
+            }
+            else
+            {
+                main();
+            }
+        }
+        main();
+
+
+    }
+
+    private void main(){
+        mTrialy = new Trialy(this, appKEY);
+        File file = new File(getExternalFilesDir(null).getAbsoluteFile() + "/tanpura.mp3");
+        if(file.exists())
+            file.delete();
+        checkExternalMedia();
         new Handler().postDelayed(new Runnable(){
             @Override
             public void run() {
@@ -84,34 +117,28 @@ public class SplashActivity extends AppCompatActivity {
                         case 1:
                             mTrialy.checkTrial(SKU, mTrialyCallback);
                             break;
-                        case 0:
-                            Intent intent = new Intent(SplashActivity.this, PurchaseActivity.class);
-                            intent.putExtra("BASE","CHECK");
-                            startActivity(intent);
                     }
                 }
-                catch (Exception E){}
-
+                catch (Exception E){
+                    Log.e("Error",E.toString());
+                }
             }
         }, 2000);
-
     }
 
 
 
     private Integer verify() {
-        try {
-            SharedPreferences prefs = getSharedPreferences(IS_PREMIUM, MODE_PRIVATE);
-            String is_premium = prefs.getString(MEMBERSHIP, "FALSE");//"No name defined" is the default value.
-            if (is_premium.equals("TRUE"))
+        switch (read_license()){
+            case "verified":
                 return 2;
-            else if (is_premium.equals("FALSE"))
+            case "Invalid value":
+                return 1;
+            case "No license":
+                return 1;
+            default:
                 return 1;
         }
-        catch (Exception E){
-            return 0;
-        }
-        return null;
     }
 
     private void _start(String membership) {
@@ -140,6 +167,11 @@ public class SplashActivity extends AppCompatActivity {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         notificationDialog("Trial Running", notification_message);
                     }
+                    else{
+
+                        Toast.makeText(SplashActivity.this, "Your Trial remaining "+String.valueOf(daysRemaining)+" days", Toast.LENGTH_LONG).show();
+                        _start("Trial");
+                    }
                     break;
                 case STATUS_TRIAL_JUST_ENDED:
                     //The trial has just ended - block access to the premium features
@@ -154,10 +186,10 @@ public class SplashActivity extends AppCompatActivity {
                     showDialog("Trial Mode", String.format(Locale.ENGLISH, "Do you want to start the trial?"), START_TRIAL);
                     break;
                 case STATUS_TRIAL_OVER:
-//                    showDialog("Trial Ended", String.format(Locale.ENGLISH, "Your Trial is ended. please buy to continue premium features"), BUY_NOW);
-                    Intent intent = new Intent(SplashActivity.this, PurchaseActivity.class);
-                    intent.putExtra("BASE","ENDTRIAL");
-                    startActivity(intent);
+                    showDialog("Trial Ended", String.format(Locale.ENGLISH, "Your Trial is ended. please buy to continue features"), BUY_NOW);
+//                    Intent intent = new Intent(SplashActivity.this, PurchaseActivity.class);
+//                    intent.putExtra("BASE","ENDTRIAL");
+//                    startActivity(intent);
                     break;
             }
             Log.i("TRIALY", "Returned status: " + Trialy.getStatusMessage(status));
@@ -200,7 +232,9 @@ public class SplashActivity extends AppCompatActivity {
                 ok.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        Intent intent  = new Intent(SplashActivity.this, PurchaseActivity.class);
+                        intent.putExtra("BASE","BUY");
+                        startActivity(intent);
                         dialog.dismiss();
                     }
                 });
@@ -267,34 +301,130 @@ public class SplashActivity extends AppCompatActivity {
     }
 
 
+    private void checkExternalMedia(){
+        boolean mExternalStorageAvailable = false;
+        boolean mExternalStorageWriteable = false;
+        String state = Environment.getExternalStorageState();
 
-    //    IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
-//        public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
-//            Log.d(TAG, "Purchase finished: " + result + ", purchase: "
-//                    + purchase);
-//            if (result.isFailure()) {
-//                complain("Error purchasing: " + result);
-//                // setWaitScreen(false);
-//                return;
-//            }
-//            if (!verifyDeveloperPayload(purchase)) {
-//                complain("Error purchasing. Authenticity verification failed.");
-//                // setWaitScreen(false);
-//                return;
-//            }
-//
-//            Log.d(TAG, "Purchase successful.");
-//
-//
-//            if (purchase.getSku().equals(SKU_PREMIUM)) {
-//                // bought the premium upgrade!
-//                Log.d(TAG, "Purchase is premium upgrade. Congratulating user.");
-//                mIsPremium = true;
-//            }
-//        }
-//
-//        };
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            // Can read and write the media
+            mExternalStorageAvailable = mExternalStorageWriteable = true;
+        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+            // Can only read the media
+            mExternalStorageAvailable = true;
+            mExternalStorageWriteable = false;
+        } else {
+            // Can't read or write
+            mExternalStorageAvailable = mExternalStorageWriteable = false;
+        }
 
+    }
+    private String readRaw(){
+        File root = android.os.Environment.getExternalStorageDirectory();
+        File dir = new File (root.getAbsolutePath() + "/saathsangeet");
+        File file = new File(dir, "License.so");
+
+        StringBuilder text = new StringBuilder();
+
+        try {
+            BufferedReader brr = new BufferedReader(new FileReader(file));
+            String line;
+
+            while ((line = brr.readLine()) != null) {
+                text.append(line);
+                text.append('\n');
+            }
+            brr.close();
+        }
+        catch (IOException e) {
+            return "No file";
+        }
+        return String.valueOf(text);
+    }
+
+    public String read_license(){
+
+        String device_imei = "";
+        Integer info_limit = 15;
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q)
+        {
+            device_imei = Settings.System.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
+            info_limit = 16;
+
+
+        }
+        else {
+            TelephonyManager TelephonyMgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    Activity#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for Activity#requestPermissions for more details.
+                    Toast.makeText(this, "Need to Permission", Toast.LENGTH_LONG);
+                }
+            }
+            device_imei = TelephonyMgr.getDeviceId();
+        }
+        String secred_string = readRaw();
+        if (secred_string.equals("No file")) {
+//            Toast.makeText(this, "No license" + device_imei, Toast.LENGTH_SHORT).show();
+            return "No license";
+        }
+        String secred_index = secred_string.split(":")[0];
+
+        ArrayList<String> sec_index = new ArrayList<>();
+        StringBuilder s_index = new StringBuilder(secred_index);
+        Integer default_i = 0;
+        while (sec_index.size()<device_imei.length()) {
+            Integer pointer = default_i + 1;
+            String id = "";
+            Integer length = Integer.parseInt(String.valueOf(s_index.charAt(default_i)));
+            for (int j = 0; j < length; j++) {
+                id += s_index.charAt(pointer + j);
+            }
+            sec_index.add(id);
+            default_i = pointer + length;
+        }
+        Log.e("recover",String.valueOf(sec_index));
+
+        String secret_id = "";
+        StringBuilder key = new StringBuilder(secred_string);
+        for (int i = 0; i < device_imei.length(); i ++){
+            secret_id += key.charAt(Integer.parseInt(sec_index.get(i)) + secred_index.length() +2);
+        }
+        Log.e("secret",secret_id);
+
+
+        if (secret_id.equals(device_imei)) {
+//            Toast.makeText(this, "verified" + device_imei, Toast.LENGTH_SHORT).show();
+            return "verified";
+        }
+        else {
+//            Toast.makeText(this, "Invalid value" + device_imei, Toast.LENGTH_SHORT).show();
+            return "Invalid value";
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case 0: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    main();
+                } else {
+                    Toast.makeText(this, "Required permission",Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
 
 
 }

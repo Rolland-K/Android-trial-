@@ -3,6 +3,7 @@ package com.music.monir;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,7 +13,6 @@ import android.widget.ListView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -44,7 +44,7 @@ public class TanpuraChooseActivity extends AppCompatActivity {
     public static final int progress_bar_type = 0;
     private String mCurrentMusicName = "";
     private String mCurrentTanuraName = "";
-
+    private SharedPreferences pref ;
     private boolean isDownloading = false;
 
     @Override
@@ -52,6 +52,7 @@ public class TanpuraChooseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tanpura_choose);
         mListMusic = findViewById(R.id.list_music);
+        pref = getSharedPreferences("DATA", MODE_PRIVATE);
         arrMusicTitle = new ArrayList<String>();
         mAdapter = new CustomAdapter(arrMusicTitle, getApplicationContext());
         mListMusic.setAdapter(mAdapter);
@@ -205,18 +206,18 @@ public class TanpuraChooseActivity extends AppCompatActivity {
         protected void onPostExecute(String file_url) {
             // dismiss the dialog after the file was downloaded
             dismissDialog(progress_bar_type);
+            SharedPreferences.Editor editor = pref.edit();
+            editor.putString("tanpura_name", mCurrentTanuraName);
+            editor.apply();
             Intent intent = new Intent(TanpuraChooseActivity.this, MainActivity.class);
             intent.putExtra("filename", mCurrentMusicName);
             intent.putExtra("tanpura", mCurrentTanuraName);
             startActivity(intent);
             finish();
-
         }
     }
 
-
     // Read from the database
-
     @Override
     public void onStart() {
         super.onStart();

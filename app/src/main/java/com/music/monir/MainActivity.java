@@ -277,8 +277,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mPlayer.setVolume(volumn_left, volumn_right);
         mTanpuraPlayer.setVolume(0, 0);
         String[] res = mCurrentMusicName.split("_");
-        if(res.length > 3)
-            mCurrentMusicName = res[0] + "_" + res[1] + "_" + res[2];
+        if(res.length > 3) {
+            mCurrentMusicName =  res[2].equals("")? (res[0] + "_" + res[1]): (res[0] + "_" + res[1] + "_" + res[2]);
+
+        }
         tvTitle.setText(mCurrentMusicName);
 
     }
