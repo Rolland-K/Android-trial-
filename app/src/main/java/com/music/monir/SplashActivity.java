@@ -44,7 +44,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -74,6 +78,14 @@ public class SplashActivity extends AppCompatActivity {
     Integer MY_PERMISSIONS_REQUEST_READ_STATE = 0;
     Integer MY_PERMISSIONS_REQUEST_READ_EXTERNAL = 1;
 
+    final Integer PAID = 2;
+    final Integer TRIAL = 1;
+    final Integer END_TRIAL = 0;
+    final String MODE_STATUS = "trial_mode_status";
+    private Calendar calendar;
+    private SimpleDateFormat dateFormat;
+    private String date;
+    String daysRemaining = "";
     public static SplashActivity self;
 
     @Override
@@ -104,19 +116,33 @@ public class SplashActivity extends AppCompatActivity {
         File file = new File(getExternalFilesDir(null).getAbsoluteFile() + "/tanpura.mp3");
         if(file.exists())
             file.delete();
-        checkExternalMedia();
+//        checkExternalMedia();
         new Handler().postDelayed(new Runnable(){
             @Override
             public void run() {
                 /* Create an Intent that will start the Menu-Activity. */
                 try {
-                    switch (verify()){
+                    Integer in_trial = is_in_trial();
+                    switch (in_trial){
                         case 2:
                             _start("Premium");
                             break;
                         case 1:
-                            mTrialy.checkTrial(SKU, mTrialyCallback);
+                            //Toast.makeText(SplashActivity.this,"Running" + String.valueOf(daysRemaining), Toast.LENGTH_SHORT).show();
+                            String notification_message = "Your Trial remaining "+daysRemaining+" days";
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                notificationDialog("Trial Running", notification_message);
+                            }
+                            else{
+
+                                Toast.makeText(SplashActivity.this, "Your Trial remaining "+String.valueOf(daysRemaining)+" days", Toast.LENGTH_LONG).show();
+                                _start("Trial");
+                            }
                             break;
+                        case 0:
+                            showDialog("Trial Ended", String.format(Locale.ENGLISH, "Your Trial is just ended. please buy to continue"), BUY_NOW);
+                            break;
+
                     }
                 }
                 catch (Exception E){
@@ -126,18 +152,31 @@ public class SplashActivity extends AppCompatActivity {
         }, 2000);
     }
 
+    private Integer is_in_trial(){
+        SharedPreferences pref = getSharedPreferences(MODE_STATUS,MODE_PRIVATE);
+        String status = pref.getString("status","None");
 
-
-    private Integer verify() {
-        switch (read_license()){
-            case "verified":
-                return 2;
-            case "Invalid value":
-                return 1;
-            case "No license":
-                return 1;
+        switch (status){
+            case "None":
+                SharedPreferences.Editor editor = getSharedPreferences(MODE_STATUS, MODE_PRIVATE).edit();
+                editor.putString("status","Trial");
+                editor.putString("start_date",getToday());
+                editor.apply();
+                return TRIAL;
+            case "Trial":
+                String start_date = pref.getString("start_date",getToday());
+                Integer remain = 5 - Integer.parseInt(getCountOfDays(start_date,getToday()));
+                if (remain > 0){
+                    daysRemaining = String.valueOf(remain);
+                    return  TRIAL;
+                }
+                else
+                    return END_TRIAL;
+            case "Paid":
+                return PAID;
             default:
-                return 1;
+                return TRIAL;
+
         }
     }
 
@@ -147,7 +186,7 @@ public class SplashActivity extends AppCompatActivity {
         startActivity(mainIntent);
         finish();
     }
-
+/*
     private TrialyCallback mTrialyCallback = new TrialyCallback() {
         @Override
         public void onResult(int status, long timeRemaining, String sku) {
@@ -196,7 +235,7 @@ public class SplashActivity extends AppCompatActivity {
         }
 
     };
-
+*/
 
     private void showDialog(String title, String message, String buttonLabel){
 
@@ -219,15 +258,15 @@ public class SplashActivity extends AppCompatActivity {
         });
         ok.setText(buttonLabel);
         switch (buttonLabel){
-            case OK:
-                ok.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dialog.dismiss();
-                        _start("Trial");
-                    }
-                });
-                break;
+//            case OK:
+//                ok.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        dialog.dismiss();
+//                        _start("Trial");
+//                    }
+//                });
+//                break;
             case BUY_NOW:
                 ok.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -239,17 +278,17 @@ public class SplashActivity extends AppCompatActivity {
                     }
                 });
                 break;
-            case START_TRIAL:
-                ok.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        //start trial
-                        mTrialy.startTrial(SKU, mTrialyCallback);
-                        dialog.dismiss();
-                    }
-                });
-                dismiss.setVisibility(View.VISIBLE);
-                break;
+//            case START_TRIAL:
+//                ok.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        //start trial
+//                        mTrialy.startTrial(SKU, mTrialyCallback);
+//                        dialog.dismiss();
+//                    }
+//                });
+//                dismiss.setVisibility(View.VISIBLE);
+//                break;
             case CLOSE:
                 ok.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -296,11 +335,11 @@ public class SplashActivity extends AppCompatActivity {
     public void onResume() {
 
         super.onResume();
-        if (Global.mdefined)
-            mTrialy.checkTrial(SKU, mTrialyCallback);
+//        if (Global.mdefined)
+//            mTrialy.checkTrial(SKU, mTrialyCallback);
     }
 
-
+/*
     private void checkExternalMedia(){
         boolean mExternalStorageAvailable = false;
         boolean mExternalStorageWriteable = false;
@@ -341,7 +380,6 @@ public class SplashActivity extends AppCompatActivity {
         }
         return String.valueOf(text);
     }
-
     public String read_license(){
 
         String device_imei = "";
@@ -372,7 +410,6 @@ public class SplashActivity extends AppCompatActivity {
         }
         String secred_string = readRaw();
         if (secred_string.equals("No file")) {
-//            Toast.makeText(this, "No license" + device_imei, Toast.LENGTH_SHORT).show();
             return "No license";
         }
         String secred_index = secred_string.split(":")[0];
@@ -401,15 +438,13 @@ public class SplashActivity extends AppCompatActivity {
 
 
         if (secret_id.equals(device_imei)) {
-//            Toast.makeText(this, "verified" + device_imei, Toast.LENGTH_SHORT).show();
             return "verified";
         }
         else {
-//            Toast.makeText(this, "Invalid value" + device_imei, Toast.LENGTH_SHORT).show();
             return "Invalid value";
         }
     }
-
+*/
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String[] permissions, int[] grantResults) {
@@ -426,5 +461,81 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
 
+
+    public  String getToday(){
+        calendar = Calendar.getInstance();
+        dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+        date = dateFormat.format(calendar.getTime());
+        return date.toString();
+    }
+
+    public static String getCountOfDays(String start_date, String end_date) {
+        if((!(start_date.equals("")))&&(!end_date.equals(""))) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
+
+            Date createdConvertedDate = null, expireCovertedDate = null, todayWithZeroTime = null;
+            try {
+                createdConvertedDate = dateFormat.parse(start_date);
+                expireCovertedDate = dateFormat.parse(end_date);
+
+                Date today = new Date();
+
+                todayWithZeroTime = dateFormat.parse(dateFormat.format(today));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            int cYear = 0, cMonth = 0, cDay = 0;
+
+            if (createdConvertedDate.before(todayWithZeroTime)) {
+                Calendar cCal = Calendar.getInstance();
+                cCal.setTime(createdConvertedDate);
+                cYear = cCal.get(Calendar.YEAR);
+                cMonth = cCal.get(Calendar.MONTH);
+                cDay = cCal.get(Calendar.DAY_OF_MONTH);
+
+            } else {
+                Calendar cCal = Calendar.getInstance();
+                cCal.setTime(todayWithZeroTime);
+                cYear = cCal.get(Calendar.YEAR);
+                cMonth = cCal.get(Calendar.MONTH);
+                cDay = cCal.get(Calendar.DAY_OF_MONTH);
+            }
+
+
+    /*Calendar todayCal = Calendar.getInstance();
+    int todayYear = todayCal.get(Calendar.YEAR);
+    int today = todayCal.get(Calendar.MONTH);
+    int todayDay = todayCal.get(Calendar.DAY_OF_MONTH);
+    */
+
+            Calendar eCal = Calendar.getInstance();
+            eCal.setTime(expireCovertedDate);
+
+            int eYear = eCal.get(Calendar.YEAR);
+            int eMonth = eCal.get(Calendar.MONTH);
+            int eDay = eCal.get(Calendar.DAY_OF_MONTH);
+
+            Calendar date1 = Calendar.getInstance();
+            Calendar date2 = Calendar.getInstance();
+
+            date1.clear();
+            date1.set(cYear, cMonth, cDay);
+            date2.clear();
+            date2.set(eYear, eMonth, eDay);
+
+            long diff = date2.getTimeInMillis() - date1.getTimeInMillis();
+
+            float dayCount = (float) diff / (24 * 60 * 60 * 1000);
+            if(dayCount > 0) {
+                String duration = ("" + (int) dayCount);
+                return duration;
+            }
+            else {
+
+            }
+        }
+        return "5";
+    }
 
 }
