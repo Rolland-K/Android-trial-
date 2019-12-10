@@ -107,6 +107,10 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
         });
         init();
         Intent intent = getIntent();
+        if (SplashActivity.userEmail == null){
+            Toast.makeText(PurchaseActivity.this,"Please select your account. now we can't save your data.",Toast.LENGTH_LONG).show();
+            finish();
+        }
         if (intent.getStringExtra("BASE").equals("CHECK")) {
             check = true;
         }
@@ -489,31 +493,33 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
 
 
     private void upload_trial_data(String userEmail,String mode) {
-        FirebaseApp.initializeApp(this);
-        String id = "payment/" + userEmail.split("@")[0].replace(".","") + SplashActivity.getToday().replace("/","_");
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference(id+"/email");
-        myRef.setValue(userEmail);
-        myRef = database.getReference(id+"/date");
-        myRef.setValue(SplashActivity.getToday());
-        myRef = database.getReference(id+"/status");
-        myRef.setValue(mode);
-        myRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String value = dataSnapshot.getValue(String.class);
-                Log.d(TAG, "Value is:" + value);
-                Toast.makeText(PurchaseActivity.this,"Your data saved to server successfully",Toast.LENGTH_LONG).show();
-            }
+        if(userEmail != null) {
+            FirebaseApp.initializeApp(this);
+            String id = "payment/" + userEmail.split("@")[0].replace(".", "") + SplashActivity.getToday().replace("/", "_");
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference myRef = database.getReference(id + "/email");
+            myRef.setValue(userEmail);
+            myRef = database.getReference(id + "/date");
+            myRef.setValue(SplashActivity.getToday());
+            myRef = database.getReference(id + "/status");
+            myRef.setValue(mode);
+            myRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    String value = dataSnapshot.getValue(String.class);
+                    Log.d(TAG, "Value is:" + value);
+                    Toast.makeText(PurchaseActivity.this, "Your data saved to server successfully", Toast.LENGTH_LONG).show();
+                }
 
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.w(TAG,"Failed to rad value ", databaseError.toException());
-                Toast.makeText(PurchaseActivity.this,"Data saving failed"+databaseError.toString(),Toast.LENGTH_LONG).show();
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Log.w(TAG, "Failed to rad value ", databaseError.toException());
+                    Toast.makeText(PurchaseActivity.this, "Data saving failed" + databaseError.toString(), Toast.LENGTH_LONG).show();
 
-            }
-        });
+                }
+            });
+        }
     }
 
 

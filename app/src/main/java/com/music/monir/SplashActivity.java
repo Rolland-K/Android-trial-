@@ -51,20 +51,12 @@ import io.trialy.library.Trialy;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private String appKEY = "ODN7F4TU7GB2A0AQ6KV";
-//    private String appKEY = "2KUNOKEJX1FUXLUYNQ4";
-    private String SKU = "saath";
-    final String OK = "OK";
+
     final String BUY_NOW = "BUY NOW";
-    final String START_TRIAL = "START TRIAL";
     final String CLOSE = "CLOSE";
-    Trialy mTrialy;
-    boolean buying = false;
 
     String MEMBERSHIP = "membership";
-    String IS_PREMIUM = "5RZZJLZVF5";
     Integer MY_PERMISSIONS_REQUEST_READ_STATE = 0;
-    Integer MY_PERMISSIONS_REQUEST_READ_EXTERNAL = 1;
 
     private String TAG = "AccountsActivityTAG";
     private String wantPermission = Manifest.permission.GET_ACCOUNTS;
@@ -82,27 +74,27 @@ public class SplashActivity extends AppCompatActivity {
     public static SplashActivity self;
     public static String userEmail = null;
     public ArrayList<user> array_user = new ArrayList<>();
-    ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-        check_username();
+        self = this;
+        check_permission();
     }
-    private void check_username(){
+    public void check_username(){
         SharedPreferences pref = getSharedPreferences(MODE_STATUS,MODE_PRIVATE);
-        String useremail = pref.getString("user_email","None");
-        if (useremail.equals("None")){
+        userEmail = pref.getString("user_email",null);
+        if (userEmail==null){
             Intent googlePicker = AccountPicker.newChooseAccountIntent(null, null, new String[]{GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE},
                         true, null, null, null, null);
             startActivityForResult(googlePicker, REQUEST_CODE);
         }
         else
-            check_permission(useremail);
+            get_payment_info();
     }
 
-    private void check_permission(String useremail){
+    public void check_permission(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
@@ -113,12 +105,12 @@ public class SplashActivity extends AppCompatActivity {
             }
             else
             {
-                get_payment_info(useremail);
+                check_username();
             }
         }
     }
 
-    private void get_payment_info(String useremail) {
+    private void get_payment_info() {
         FirebaseApp.initializeApp(this);
         try {
             FirebaseDatabase.getInstance().setPersistenceEnabled(true);
@@ -133,7 +125,6 @@ public class SplashActivity extends AppCompatActivity {
                 if (dataSnapshot.exists()) {
                     HashMap<String, Object> dataMap = (HashMap<String, Object>) dataSnapshot.getValue();
                     for (String key : dataMap.keySet()) {
-
                         Object data = dataMap.get(key);
                         try {
                             HashMap<String, Object> userData = (HashMap<String, Object>) data;
@@ -148,17 +139,14 @@ public class SplashActivity extends AppCompatActivity {
                         }
                     }
                     Log.e("Length",String.valueOf(array_user.size()));
-                    check_payment();
-
                 }
-
+                check_payment();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 Log.w(TAG,"Failed to rad value ", databaseError.toException());
                 Toast.makeText(SplashActivity.this, "Failed to read Data", Toast.LENGTH_LONG).show();
-                progressDialog.dismiss();
             }
 
         });
@@ -192,36 +180,37 @@ public class SplashActivity extends AppCompatActivity {
         else{
             main();
         }
-
     }
 
     private void upload_trial_data(String userEmail,String mode) {
-        FirebaseApp.initializeApp(this);
-        String id = "payment/" + userEmail.split("@")[0].replace(".","") + getToday().replace("/","_");
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference(id+"/email");
-        myRef.setValue(userEmail);
-        myRef = database.getReference(id+"/date");
-        myRef.setValue(getToday());
-        myRef = database.getReference(id+"/status");
-        myRef.setValue(mode);
-        myRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String value = dataSnapshot.getValue(String.class);
-                Log.d(TAG, "Value is:" + value);
-                Toast.makeText(SplashActivity.this,"Your data saved to server successfully",Toast.LENGTH_LONG).show();
-                main();
-            }
+        if( userEmail != null) {
+            FirebaseApp.initializeApp(this);
+            String id = "payment/" + userEmail.split("@")[0].replace(".", "") + getToday().replace("/", "_");
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference myRef = database.getReference(id + "/email");
+            myRef.setValue(userEmail);
+            myRef = database.getReference(id + "/date");
+            myRef.setValue(getToday());
+            myRef = database.getReference(id + "/status");
+            myRef.setValue(mode);
+            myRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    String value = dataSnapshot.getValue(String.class);
+                    Log.d(TAG, "Value is:" + value);
+                    Toast.makeText(SplashActivity.this, "Your data saved to server successfully", Toast.LENGTH_LONG).show();
+                    main();
+                }
 
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.w(TAG,"Failed to rad value ", databaseError.toException());
-                Toast.makeText(SplashActivity.this,"Data saving failed"+databaseError.toString(),Toast.LENGTH_LONG).show();
-                main();
-            }
-        });
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Log.w(TAG, "Failed to rad value ", databaseError.toException());
+                    Toast.makeText(SplashActivity.this, "Data saving failed" + databaseError.toString(), Toast.LENGTH_LONG).show();
+                    main();
+                }
+            });
+        }
     }
 
     private void main(){
@@ -389,7 +378,7 @@ public class SplashActivity extends AppCompatActivity {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    get_payment_info(userEmail);
+                    check_username();
                 } else {
                     Toast.makeText(this, "Required permission",Toast.LENGTH_LONG).show();
                 }
@@ -407,13 +396,14 @@ public class SplashActivity extends AppCompatActivity {
             if (!userEmail.equals("")){
                 SharedPreferences.Editor editor = getSharedPreferences(MODE_STATUS, MODE_PRIVATE).edit();
                 editor.putString("user_email",userEmail);
+                editor.apply();
             }
             Log.d(TAG, userEmail);
         }
         if (userEmail == null){
-            Toast.makeText(SplashActivity.this,"Waning. Your data will not save to server", Toast.LENGTH_LONG).show();
+            Toast.makeText(SplashActivity.this,"Waning. Your data will not saved to server", Toast.LENGTH_LONG).show();
         }
-        check_permission(userEmail);
+        get_payment_info();
 
     }
 
@@ -488,6 +478,10 @@ public class SplashActivity extends AppCompatActivity {
             }
         }
         return "0";
+    }
+
+    public static SplashActivity getInstance(){
+        return self;
     }
 
 }
