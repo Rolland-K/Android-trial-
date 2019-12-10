@@ -75,12 +75,12 @@ public class SplashActivity extends AppCompatActivity {
     final Integer TRIAL = 1;
     final Integer END_TRIAL = 0;
     final String MODE_STATUS = "trial_mode_status";
-    private Calendar calendar;
-    private SimpleDateFormat dateFormat;
-    private String date;
+    private static Calendar calendar;
+    private static SimpleDateFormat dateFormat;
+    private static String date;
     String daysRemaining = "";
     public static SplashActivity self;
-    public String userEmail = null;
+    public static String userEmail = null;
     public ArrayList<user> array_user = new ArrayList<>();
     ProgressDialog progressDialog;
 
@@ -417,7 +417,7 @@ public class SplashActivity extends AppCompatActivity {
 
     }
 
-    public  String getToday(){
+    public static String getToday(){
         calendar = Calendar.getInstance();
         dateFormat = new SimpleDateFormat("MM/dd/yyyy");
         date = dateFormat.format(calendar.getTime());

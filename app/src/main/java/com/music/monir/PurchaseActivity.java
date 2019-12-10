@@ -19,8 +19,15 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.music.monir.payment.util.IabBroadcastReceiver;
 import com.music.monir.payment.util.IabHelper;
 import com.music.monir.payment.util.IabResult;
@@ -92,14 +99,12 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
         setContentView(R.layout.activity_purchase);
         buy = (Button)findViewById(R.id.btn_buy);
         msg = (TextView)findViewById(R.id.msg_end_trial);
-
         buy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onUpgradeAppButtonClicked();
             }
         });
-
         init();
         Intent intent = getIntent();
         if (intent.getStringExtra("BASE").equals("CHECK")) {
@@ -393,7 +398,7 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
                 alert("Thank you for Buying App!");
                 mIsPremium = true;
                 upgrade_membership();
-                make_license_file();
+                upload_trial_data(SplashActivity.userEmail,"paid");
 
                 /*
                 SharedPreferences.Editor editor = getSharedPreferences(MEMBERSHIP, MODE_PRIVATE).edit();
@@ -483,91 +488,33 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
 
 
 
-    public String Create_license(String imei) {
-
-
-
-        Random generator = new Random();
-        StringBuilder randomStringBuilder = new StringBuilder();
-        char tempChar;
-        for (int i = 0; i < 200; i++){
-            tempChar = (char) (generator.nextInt(96) + 32);
-            randomStringBuilder.append(tempChar);
-        }
-        int min = 50;
-        int max = 180;
-        ArrayList<Integer> index = new ArrayList<>();
-        while (index.size()<imei.length() + 1) {
-            Random r = new Random();
-            int rand = r.nextInt(max - min + 1) + min;
-            boolean uniqure = true;
-            for (int i = 0; i < index.size(); i++) {
-                if (index.get(i) == rand) {
-                    uniqure = false;
-                    break;
-                }
+    private void upload_trial_data(String userEmail,String mode) {
+        FirebaseApp.initializeApp(this);
+        String id = "payment/" + userEmail.split("@")[0].replace(".","") + SplashActivity.getToday().replace("/","_");
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference(id+"/email");
+        myRef.setValue(userEmail);
+        myRef = database.getReference(id+"/date");
+        myRef.setValue(SplashActivity.getToday());
+        myRef = database.getReference(id+"/status");
+        myRef.setValue(mode);
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String value = dataSnapshot.getValue(String.class);
+                Log.d(TAG, "Value is:" + value);
+                Toast.makeText(PurchaseActivity.this,"Your data saved to server successfully",Toast.LENGTH_LONG).show();
             }
-            if (uniqure)
-                index.add(rand);
-        }
-        Log.e("tag",String.valueOf(index));
-        StringBuilder key = new StringBuilder(imei);
-        for (int i = 0; i < imei.length(); i ++){
-            randomStringBuilder.setCharAt(index.get(i),key.charAt(i));
-        }
-        Log.e("new", String.valueOf(randomStringBuilder));
-        String secret_index = "";
-        for (int i = 0; i < imei.length(); i ++){
-            secret_index += index.get(i).toString().length()+index.get(i).toString();
-        }
-        Log.e("index",secret_index);
-        return secret_index + " : "+ randomStringBuilder.toString();
+
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.w(TAG,"Failed to rad value ", databaseError.toException());
+                Toast.makeText(PurchaseActivity.this,"Data saving failed"+databaseError.toString(),Toast.LENGTH_LONG).show();
+
+            }
+        });
     }
 
 
-    public void make_license_file(){
-
-        String device_imei = "";
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q)
-        {
-            device_imei = Settings.System.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
-
-        }
-        else {
-            TelephonyManager TelephonyMgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    //    Activity#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for Activity#requestPermissions for more details.
-
-                }
-            }
-            device_imei = TelephonyMgr.getDeviceId();
-        }
-        File root = android.os.Environment.getExternalStorageDirectory();
-        File dir = new File (root.getAbsolutePath() + "/saathsangeet");
-        dir.mkdirs();
-        File file = new File(dir, "License.so");
-
-        try {
-            FileOutputStream f = new FileOutputStream(file);
-            PrintWriter pw = new PrintWriter(f);
-            pw.println(Create_license(device_imei));
-            pw.flush();
-            pw.close();
-            f.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            Log.i("TAG", "******* File not found. Did you" +
-                    " add a WRITE_EXTERNAL_STORAGE permission to the   manifest?");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }
