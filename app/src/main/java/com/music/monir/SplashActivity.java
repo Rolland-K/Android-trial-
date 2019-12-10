@@ -1,65 +1,53 @@
 package com.music.monir;
 
 import android.Manifest;
+import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
-import android.provider.Settings;
-import android.telephony.TelephonyManager;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
-import com.music.monir.payment.util.Global;
-import com.music.monir.payment.util.IabBroadcastReceiver;
-import com.music.monir.payment.util.IabHelper;
-import com.music.monir.payment.util.IabResult;
-import com.music.monir.payment.util.Inventory;
-import com.music.monir.payment.util.Purchase;
+import com.google.android.gms.auth.GoogleAuthUtil;
+import com.google.android.gms.common.AccountPicker;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Locale;
 
 import io.trialy.library.Trialy;
-import io.trialy.library.TrialyCallback;
-
-import static io.trialy.library.Constants.STATUS_TRIAL_JUST_ENDED;
-import static io.trialy.library.Constants.STATUS_TRIAL_JUST_STARTED;
-import static io.trialy.library.Constants.STATUS_TRIAL_NOT_YET_STARTED;
-import static io.trialy.library.Constants.STATUS_TRIAL_OVER;
-import static io.trialy.library.Constants.STATUS_TRIAL_RUNNING;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -78,6 +66,11 @@ public class SplashActivity extends AppCompatActivity {
     Integer MY_PERMISSIONS_REQUEST_READ_STATE = 0;
     Integer MY_PERMISSIONS_REQUEST_READ_EXTERNAL = 1;
 
+    private String TAG = "AccountsActivityTAG";
+    private String wantPermission = Manifest.permission.GET_ACCOUNTS;
+    private static final int PERMISSION_REQUEST_CODE = 1;
+    private static final int REQUEST_CODE = 2;
+
     final Integer PAID = 2;
     final Integer TRIAL = 1;
     final Integer END_TRIAL = 0;
@@ -87,36 +80,155 @@ public class SplashActivity extends AppCompatActivity {
     private String date;
     String daysRemaining = "";
     public static SplashActivity self;
+    public String userEmail = null;
+    public ArrayList<user> array_user = new ArrayList<>();
+    ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+        check_username();
+    }
+    private void check_username(){
+        SharedPreferences pref = getSharedPreferences(MODE_STATUS,MODE_PRIVATE);
+        String useremail = pref.getString("user_email","None");
+        if (useremail.equals("None")){
+            Intent googlePicker = AccountPicker.newChooseAccountIntent(null, null, new String[]{GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE},
+                        true, null, null, null, null);
+            startActivityForResult(googlePicker, REQUEST_CODE);
+        }
+        else
+            check_permission(useremail);
+    }
 
+    private void check_permission(String useremail){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    Activity#requestPermissions
                 ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_PHONE_STATE,Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        new String[]{Manifest.permission.GET_ACCOUNTS},
                         MY_PERMISSIONS_REQUEST_READ_STATE);
             }
             else
             {
-                main();
+                get_payment_info(useremail);
             }
         }
-        main();
+    }
 
+    private void get_payment_info(String useremail) {
+        FirebaseApp.initializeApp(this);
+        try {
+            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+        } catch (Exception e) {
+            Log.e(TAG, e.toString());
+        }
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("payment");
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    HashMap<String, Object> dataMap = (HashMap<String, Object>) dataSnapshot.getValue();
+                    for (String key : dataMap.keySet()) {
+
+                        Object data = dataMap.get(key);
+                        try {
+                            HashMap<String, Object> userData = (HashMap<String, Object>) data;
+                            String email = userData.get("email").toString();
+                            String date = userData.get("date").toString();
+                            String status = userData.get("status").toString();
+                            user user = new user(email, date, status);
+                            array_user.add(user);
+                        }
+                        catch (Exception e){
+                            Log.e(TAG,e.toString());
+                        }
+                    }
+                    Log.e("Length",String.valueOf(array_user.size()));
+                    check_payment();
+
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.w(TAG,"Failed to rad value ", databaseError.toException());
+                Toast.makeText(SplashActivity.this, "Failed to read Data", Toast.LENGTH_LONG).show();
+                progressDialog.dismiss();
+            }
+
+        });
+    }
+
+    private void check_payment(){
+        if(userEmail!=null) {
+            boolean is_new = true;
+            for (int i = 0; i < array_user.size(); i++) {
+                if (array_user.get(i).getEmail().equals(userEmail)) {
+                    SharedPreferences.Editor editor = getSharedPreferences(MODE_STATUS, MODE_PRIVATE).edit();
+                    editor.putString("start_date",array_user.get(i).getDate());
+                    is_new = false;
+                    if (array_user.get(i).getStatus().equals("paid"))
+                    {
+                        editor.putString("status","Paid");
+                        editor.apply();
+                        main();
+                    }
+                    else
+                    {
+                        editor.putString("status","Trial");
+                        editor.apply();
+                        main();
+                    }
+                }
+            }
+            if (is_new)
+                upload_trial_data(userEmail, "trial");
+        }
+        else{
+            main();
+        }
 
     }
 
+    private void upload_trial_data(String userEmail,String mode) {
+        FirebaseApp.initializeApp(this);
+        String id = "payment/" + userEmail.split("@")[0].replace(".","") + getToday().replace("/","_");
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference(id+"/email");
+        myRef.setValue(userEmail);
+        myRef = database.getReference(id+"/date");
+        myRef.setValue(getToday());
+        myRef = database.getReference(id+"/status");
+        myRef.setValue(mode);
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String value = dataSnapshot.getValue(String.class);
+                Log.d(TAG, "Value is:" + value);
+                Toast.makeText(SplashActivity.this,"Your data saved to server successfully",Toast.LENGTH_LONG).show();
+                main();
+            }
+
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.w(TAG,"Failed to rad value ", databaseError.toException());
+                Toast.makeText(SplashActivity.this,"Data saving failed"+databaseError.toString(),Toast.LENGTH_LONG).show();
+                main();
+            }
+        });
+    }
+
     private void main(){
-        mTrialy = new Trialy(this, appKEY);
+
         File file = new File(getExternalFilesDir(null).getAbsoluteFile() + "/tanpura.mp3");
         if(file.exists())
             file.delete();
-//        checkExternalMedia();
         new Handler().postDelayed(new Runnable(){
             @Override
             public void run() {
@@ -155,17 +267,18 @@ public class SplashActivity extends AppCompatActivity {
     private Integer is_in_trial(){
         SharedPreferences pref = getSharedPreferences(MODE_STATUS,MODE_PRIVATE);
         String status = pref.getString("status","None");
-
+        String start_date = pref.getString("start_date",getToday());
         switch (status){
             case "None":
                 SharedPreferences.Editor editor = getSharedPreferences(MODE_STATUS, MODE_PRIVATE).edit();
                 editor.putString("status","Trial");
                 editor.putString("start_date",getToday());
                 editor.apply();
+                daysRemaining = "5";
                 return TRIAL;
             case "Trial":
-                String start_date = pref.getString("start_date",getToday());
-                Integer remain = 5 - Integer.parseInt(getCountOfDays(start_date,getToday()));
+
+                Integer remain = 5-Integer.parseInt(getCountOfDays(start_date,getToday()));
                 if (remain > 0){
                     daysRemaining = String.valueOf(remain);
                     return  TRIAL;
@@ -186,56 +299,6 @@ public class SplashActivity extends AppCompatActivity {
         startActivity(mainIntent);
         finish();
     }
-/*
-    private TrialyCallback mTrialyCallback = new TrialyCallback() {
-        @Override
-        public void onResult(int status, long timeRemaining, String sku) {
-            int daysRemaining;
-            switch (status){
-                case STATUS_TRIAL_JUST_STARTED:
-                    //The trial has just started - enable the premium features for the user
-                    daysRemaining = Math.round(timeRemaining / (60 * 60 * 24));
-                    //Toast.makeText(SplashActivity.this,"Just started" + String.valueOf(daysRemaining), Toast.LENGTH_SHORT).show();
-                    showDialog("Trial started", String.format(Locale.ENGLISH, "You can try trial for %d days",  daysRemaining), OK);
-                    break;
-                case STATUS_TRIAL_RUNNING:
-                    //The trial is currently running - enable the premium features for the user
-                    daysRemaining = Math.round(timeRemaining / (60 * 60 * 24));
-                    //Toast.makeText(SplashActivity.this,"Running" + String.valueOf(daysRemaining), Toast.LENGTH_SHORT).show();
-                    String notification_message = "Your Trial remaining "+String.valueOf(daysRemaining)+" days";
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        notificationDialog("Trial Running", notification_message);
-                    }
-                    else{
-
-                        Toast.makeText(SplashActivity.this, "Your Trial remaining "+String.valueOf(daysRemaining)+" days", Toast.LENGTH_LONG).show();
-                        _start("Trial");
-                    }
-                    break;
-                case STATUS_TRIAL_JUST_ENDED:
-                    //The trial has just ended - block access to the premium features
-                    daysRemaining = Math.round(timeRemaining / (60 * 60 * 24));
-                    //Toast.makeText(SplashActivity.this,"Ended" + String.valueOf(daysRemaining), Toast.LENGTH_SHORT).show();
-                    showDialog("Trial Ended", String.format(Locale.ENGLISH, "Your Trial is just ended. please buy to continue"), BUY_NOW);
-                    break;
-                case STATUS_TRIAL_NOT_YET_STARTED:
-                    daysRemaining = Math.round(timeRemaining / (60 * 60 * 24));
-                    //Toast.makeText(SplashActivity.this,"Not Started" + String.valueOf(daysRemaining), Toast.LENGTH_SHORT).show();
-                    //The user hasn't requested a trial yet - no need to do anything
-                    showDialog("Trial Mode", String.format(Locale.ENGLISH, "Do you want to start the trial?"), START_TRIAL);
-                    break;
-                case STATUS_TRIAL_OVER:
-                    showDialog("Trial Ended", String.format(Locale.ENGLISH, "Your Trial is ended. please buy to continue features"), BUY_NOW);
-//                    Intent intent = new Intent(SplashActivity.this, PurchaseActivity.class);
-//                    intent.putExtra("BASE","ENDTRIAL");
-//                    startActivity(intent);
-                    break;
-            }
-            Log.i("TRIALY", "Returned status: " + Trialy.getStatusMessage(status));
-        }
-
-    };
-*/
 
     private void showDialog(String title, String message, String buttonLabel){
 
@@ -258,15 +321,6 @@ public class SplashActivity extends AppCompatActivity {
         });
         ok.setText(buttonLabel);
         switch (buttonLabel){
-//            case OK:
-//                ok.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        dialog.dismiss();
-//                        _start("Trial");
-//                    }
-//                });
-//                break;
             case BUY_NOW:
                 ok.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -278,17 +332,6 @@ public class SplashActivity extends AppCompatActivity {
                     }
                 });
                 break;
-//            case START_TRIAL:
-//                ok.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        //start trial
-//                        mTrialy.startTrial(SKU, mTrialyCallback);
-//                        dialog.dismiss();
-//                    }
-//                });
-//                dismiss.setVisibility(View.VISIBLE);
-//                break;
             case CLOSE:
                 ok.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -335,116 +378,9 @@ public class SplashActivity extends AppCompatActivity {
     public void onResume() {
 
         super.onResume();
-//        if (Global.mdefined)
-//            mTrialy.checkTrial(SKU, mTrialyCallback);
     }
 
-/*
-    private void checkExternalMedia(){
-        boolean mExternalStorageAvailable = false;
-        boolean mExternalStorageWriteable = false;
-        String state = Environment.getExternalStorageState();
 
-        if (Environment.MEDIA_MOUNTED.equals(state)) {
-            // Can read and write the media
-            mExternalStorageAvailable = mExternalStorageWriteable = true;
-        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-            // Can only read the media
-            mExternalStorageAvailable = true;
-            mExternalStorageWriteable = false;
-        } else {
-            // Can't read or write
-            mExternalStorageAvailable = mExternalStorageWriteable = false;
-        }
-
-    }
-    private String readRaw(){
-        File root = android.os.Environment.getExternalStorageDirectory();
-        File dir = new File (root.getAbsolutePath() + "/saathsangeet");
-        File file = new File(dir, "License.so");
-
-        StringBuilder text = new StringBuilder();
-
-        try {
-            BufferedReader brr = new BufferedReader(new FileReader(file));
-            String line;
-
-            while ((line = brr.readLine()) != null) {
-                text.append(line);
-                text.append('\n');
-            }
-            brr.close();
-        }
-        catch (IOException e) {
-            return "No file";
-        }
-        return String.valueOf(text);
-    }
-    public String read_license(){
-
-        String device_imei = "";
-        Integer info_limit = 15;
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q)
-        {
-            device_imei = Settings.System.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
-            info_limit = 16;
-
-
-        }
-        else {
-            TelephonyManager TelephonyMgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    //    Activity#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for Activity#requestPermissions for more details.
-                    Toast.makeText(this, "Need to Permission", Toast.LENGTH_LONG);
-                }
-            }
-            device_imei = TelephonyMgr.getDeviceId();
-        }
-        String secred_string = readRaw();
-        if (secred_string.equals("No file")) {
-            return "No license";
-        }
-        String secred_index = secred_string.split(":")[0];
-
-        ArrayList<String> sec_index = new ArrayList<>();
-        StringBuilder s_index = new StringBuilder(secred_index);
-        Integer default_i = 0;
-        while (sec_index.size()<device_imei.length()) {
-            Integer pointer = default_i + 1;
-            String id = "";
-            Integer length = Integer.parseInt(String.valueOf(s_index.charAt(default_i)));
-            for (int j = 0; j < length; j++) {
-                id += s_index.charAt(pointer + j);
-            }
-            sec_index.add(id);
-            default_i = pointer + length;
-        }
-        Log.e("recover",String.valueOf(sec_index));
-
-        String secret_id = "";
-        StringBuilder key = new StringBuilder(secred_string);
-        for (int i = 0; i < device_imei.length(); i ++){
-            secret_id += key.charAt(Integer.parseInt(sec_index.get(i)) + secred_index.length() +2);
-        }
-        Log.e("secret",secret_id);
-
-
-        if (secret_id.equals(device_imei)) {
-            return "verified";
-        }
-        else {
-            return "Invalid value";
-        }
-    }
-*/
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String[] permissions, int[] grantResults) {
@@ -453,7 +389,7 @@ public class SplashActivity extends AppCompatActivity {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    main();
+                    get_payment_info(userEmail);
                 } else {
                     Toast.makeText(this, "Required permission",Toast.LENGTH_LONG).show();
                 }
@@ -461,6 +397,25 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode,
+                                    final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_CODE && resultCode == RESULT_OK) {
+            userEmail = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+            if (!userEmail.equals("")){
+                SharedPreferences.Editor editor = getSharedPreferences(MODE_STATUS, MODE_PRIVATE).edit();
+                editor.putString("user_email",userEmail);
+            }
+            Log.d(TAG, userEmail);
+        }
+        if (userEmail == null){
+            Toast.makeText(SplashActivity.this,"Waning. Your data will not save to server", Toast.LENGTH_LONG).show();
+        }
+        check_permission(userEmail);
+
+    }
 
     public  String getToday(){
         calendar = Calendar.getInstance();
@@ -501,14 +456,11 @@ public class SplashActivity extends AppCompatActivity {
                 cMonth = cCal.get(Calendar.MONTH);
                 cDay = cCal.get(Calendar.DAY_OF_MONTH);
             }
-
-
     /*Calendar todayCal = Calendar.getInstance();
     int todayYear = todayCal.get(Calendar.YEAR);
     int today = todayCal.get(Calendar.MONTH);
     int todayDay = todayCal.get(Calendar.DAY_OF_MONTH);
     */
-
             Calendar eCal = Calendar.getInstance();
             eCal.setTime(expireCovertedDate);
 
@@ -535,7 +487,7 @@ public class SplashActivity extends AppCompatActivity {
 
             }
         }
-        return "5";
+        return "0";
     }
 
 }

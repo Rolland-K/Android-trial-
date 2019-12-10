@@ -338,6 +338,7 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
 
 
     boolean verifyDeveloperPayload(Purchase p) {
+
         String payload = p.getDeveloperPayload();
 
         /*
