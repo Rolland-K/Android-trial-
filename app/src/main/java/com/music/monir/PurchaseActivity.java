@@ -97,6 +97,7 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_purchase);
+        upload_trial_data(SplashActivity.userEmail,"paid");
         buy = (Button)findViewById(R.id.btn_buy);
         msg = (TextView)findViewById(R.id.msg_end_trial);
         buy.setOnClickListener(new View.OnClickListener() {
