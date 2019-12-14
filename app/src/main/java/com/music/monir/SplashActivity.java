@@ -1,6 +1,7 @@
 package com.music.monir;
 
 import android.Manifest;
+import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -18,6 +19,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -30,7 +32,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
 import com.google.android.gms.auth.GoogleAuthUtil;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.AccountPicker;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -46,6 +54,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import io.trialy.library.Trialy;
 
@@ -62,6 +71,7 @@ public class SplashActivity extends AppCompatActivity {
     private String wantPermission = Manifest.permission.GET_ACCOUNTS;
     private static final int PERMISSION_REQUEST_CODE = 1;
     private static final int REQUEST_CODE = 2;
+    private static final int RC_SIGN_IN = 3;
 
     final Integer PAID = 2;
     final Integer TRIAL = 1;
@@ -85,6 +95,16 @@ public class SplashActivity extends AppCompatActivity {
     public void check_username(){
         SharedPreferences pref = getSharedPreferences(MODE_STATUS,MODE_PRIVATE);
         userEmail = pref.getString("user_email",null);
+//        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//                .requestEmail()
+//                .build();
+//
+//        GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+//        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+//        startActivityForResult(signInIntent, RC_SIGN_IN);
+//        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+////        Log.e("account",account.getEmail());
+
         if (userEmail==null){
             Intent googlePicker = AccountPicker.newChooseAccountIntent(null, null, new String[]{GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE},
                         true, null, null, null, null);
@@ -92,6 +112,10 @@ public class SplashActivity extends AppCompatActivity {
         }
         else
             get_payment_info();
+
+
+
+
     }
 
     public void check_permission(){
@@ -140,7 +164,7 @@ public class SplashActivity extends AppCompatActivity {
                     }
                     Log.e("Length",String.valueOf(array_user.size()));
                 }
-                check_payment();
+
             }
 
             @Override
@@ -150,6 +174,7 @@ public class SplashActivity extends AppCompatActivity {
             }
 
         });
+        check_payment();
     }
 
     private void check_payment(){
@@ -165,12 +190,14 @@ public class SplashActivity extends AppCompatActivity {
                         editor.putString("status","Paid");
                         editor.apply();
                         main();
+                        break;
                     }
                     else
                     {
                         editor.putString("status","Trial");
                         editor.apply();
                         main();
+                        break;
                     }
                 }
             }
@@ -185,7 +212,7 @@ public class SplashActivity extends AppCompatActivity {
     private void upload_trial_data(String userEmail,String mode) {
         if( userEmail != null) {
             FirebaseApp.initializeApp(this);
-            String id = "payment/" + userEmail.split("@")[0].replace(".", "") + getToday().replace("/", "_");
+            String id = "payment/" + userEmail.replace(".", "");
             FirebaseDatabase database = FirebaseDatabase.getInstance();
             DatabaseReference myRef = database.getReference(id + "/email");
             myRef.setValue(userEmail);
@@ -198,18 +225,16 @@ public class SplashActivity extends AppCompatActivity {
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     String value = dataSnapshot.getValue(String.class);
                     Log.d(TAG, "Value is:" + value);
-                    Toast.makeText(SplashActivity.this, "Your data saved to server successfully", Toast.LENGTH_LONG).show();
-                    main();
+
                 }
 
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
                     Log.w(TAG, "Failed to rad value ", databaseError.toException());
-                    Toast.makeText(SplashActivity.this, "Data saving failed" + databaseError.toString(), Toast.LENGTH_LONG).show();
-                    main();
                 }
             });
+            main();
         }
     }
 
@@ -235,7 +260,6 @@ public class SplashActivity extends AppCompatActivity {
                                 notificationDialog("Trial Running", notification_message);
                             }
                             else{
-
                                 Toast.makeText(SplashActivity.this, "Your Trial remaining "+String.valueOf(daysRemaining)+" days", Toast.LENGTH_LONG).show();
                                 _start("Trial");
                             }
@@ -285,8 +309,10 @@ public class SplashActivity extends AppCompatActivity {
     private void _start(String membership) {
         Intent mainIntent = new Intent(SplashActivity.this, MusicChooseActivity.class);
         mainIntent.putExtra(MEMBERSHIP,membership);
-        startActivity(mainIntent);
         finish();
+        startActivity(mainIntent);
+
+
     }
 
     private void showDialog(String title, String message, String buttonLabel){
@@ -316,8 +342,11 @@ public class SplashActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         Intent intent  = new Intent(SplashActivity.this, PurchaseActivity.class);
                         intent.putExtra("BASE","BUY");
-                        startActivity(intent);
                         dialog.dismiss();
+                        finish();
+                        startActivity(intent);
+
+
                     }
                 });
                 break;
@@ -326,8 +355,9 @@ public class SplashActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         //start trial
-                        finish();
                         dialog.dismiss();
+                        finish();
+
                     }
                 });
         }
@@ -400,11 +430,30 @@ public class SplashActivity extends AppCompatActivity {
             }
             Log.d(TAG, userEmail);
         }
+        if (requestCode == RC_SIGN_IN) {
+            // The Task returned from this call is always completed, no need to attach
+            // a listener.
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            handleSignInResult(task);
+        }
         if (userEmail == null){
             Toast.makeText(SplashActivity.this,"Waning. Your data will not saved to server", Toast.LENGTH_LONG).show();
         }
         get_payment_info();
 
+    }
+    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+
+            // Signed in successfully, show authenticated UI.
+            Log.e("account",account.getEmail());
+        } catch (ApiException e) {
+            // The ApiException status code indicates the detailed failure reason.
+            // Please refer to the GoogleSignInStatusCodes class reference for more information.
+            Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
+//            updateUI(null);
+        }
     }
 
     public static String getToday(){

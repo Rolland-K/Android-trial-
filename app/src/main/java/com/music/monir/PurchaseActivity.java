@@ -1,17 +1,13 @@
 package com.music.monir;
 
-import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.Settings;
-import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -34,14 +30,8 @@ import com.music.monir.payment.util.IabResult;
 import com.music.monir.payment.util.Inventory;
 import com.music.monir.payment.util.Purchase;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import static com.music.monir.payment.util.Global.mIsPremium;
 
@@ -97,7 +87,9 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_purchase);
-        upload_trial_data(SplashActivity.userEmail,"paid");
+        upload_paid_data(SplashActivity.userEmail,"paid");
+        setResult(RESULT_OK);
+        finish();
         buy = (Button)findViewById(R.id.btn_buy);
         msg = (TextView)findViewById(R.id.msg_end_trial);
         buy.setOnClickListener(new View.OnClickListener() {
@@ -403,7 +395,7 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
                 alert("Thank you for Buying App!");
                 mIsPremium = true;
                 upgrade_membership();
-                upload_trial_data(SplashActivity.userEmail,"paid");
+                upload_paid_data(SplashActivity.userEmail,"paid");
 
                 /*
                 SharedPreferences.Editor editor = getSharedPreferences(MEMBERSHIP, MODE_PRIVATE).edit();
@@ -493,10 +485,10 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
 
 
 
-    private void upload_trial_data(String userEmail,String mode) {
+    private void upload_paid_data(String userEmail, String mode) {
         if(userEmail != null) {
             FirebaseApp.initializeApp(this);
-            String id = "payment/" + userEmail.split("@")[0].replace(".", "") + SplashActivity.getToday().replace("/", "_");
+            String id = "payment/" + userEmail.replace(".", "");
             FirebaseDatabase database = FirebaseDatabase.getInstance();
             DatabaseReference myRef = database.getReference(id + "/email");
             myRef.setValue(userEmail);
@@ -509,14 +501,13 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     String value = dataSnapshot.getValue(String.class);
                     Log.d(TAG, "Value is:" + value);
-                    Toast.makeText(PurchaseActivity.this, "Your data saved to server successfully", Toast.LENGTH_LONG).show();
+                    PurchaseActivity.super.setResult(RESULT_OK);
                 }
 
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
                     Log.w(TAG, "Failed to rad value ", databaseError.toException());
-                    Toast.makeText(PurchaseActivity.this, "Data saving failed" + databaseError.toString(), Toast.LENGTH_LONG).show();
 
                 }
             });

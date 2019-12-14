@@ -31,6 +31,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:src="@drawable/icon_help"/>
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="156dp"
@@ -54,22 +55,36 @@
       android:padding="10dp"
       android:orientation="vertical">
 
-      <TextView
-          android:id="@+id/title"
+      <LinearLayout
           android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:textSize="22dp"
-          android:enabled="true"
-          android:ellipsize = "marquee"
-          android:fadingEdge = "horizontal"
-          android:marqueeRepeatLimit = "marquee_forever"
-          android:scrollHorizontally = "true"
-          android:singleLine = "true"
-          android:textColor="#aa9e005d"
-          android:gravity="center"
-          android:text="SaathSangeet "
-          />
+          android:layout_height="wrap_content">
 
+          <ImageView
+              android:id="@+id/iv_back"
+              android:layout_width="30dp"
+              android:layout_height="30dp"
+              android:visibility="visible"
+              android:layout_alignParentBottom="true"
+              android:layout_alignParentLeft="true"
+              android:src="@drawable/icon_back"/>
+
+          <TextView
+              android:id="@+id/title"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:textSize="22dp"
+              android:enabled="true"
+              android:ellipsize = "marquee"
+              android:fadingEdge = "horizontal"
+              android:marqueeRepeatLimit = "marquee_forever"
+              android:scrollHorizontally = "true"
+              android:singleLine = "true"
+              android:textColor="#aa9e005d"
+              android:gravity="center"
+              android:text="SaathSangeet "
+              />
+
+      </LinearLayout>
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="match_parent"

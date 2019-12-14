@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private float currentBpm = 0;
     private float currentPitch = 0;
     private float tanpura_pitch = 0;
-    private ImageView mIvHelp, mIvInfo;
+    private ImageView mIvHelp, mIvInfo, mIvBack;
     private String mTanpuraFileName;
     private TextView tvLeftVol, tvRightVol, tvMasterVol;
 
@@ -88,6 +88,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(View v) {
                 Intent intent = new Intent (MainActivity.this, InfoActivity.class);
                 startActivity(intent);
+            }
+        });
+        mIvBack = findViewById(R.id.iv_back);
+        mIvBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
             }
         });
 

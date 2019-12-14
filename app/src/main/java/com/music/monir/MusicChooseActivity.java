@@ -1,6 +1,7 @@
 package com.music.monir;
 
 import android.Manifest;
+import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -16,11 +17,16 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -64,6 +70,7 @@ public class MusicChooseActivity extends AppCompatActivity {
     // Progress Dialog
     private ProgressDialog pDialog;
     public static final int progress_bar_type = 0;
+    public static final int PURCHASE_RESULT = 1;
     private String mCurrentMusicName = "";
     public static MusicChooseActivity self;
     String MEMBERSHIP = "membership";
@@ -99,8 +106,6 @@ public class MusicChooseActivity extends AppCompatActivity {
         mFirstName = findViewById(R.id.spin_firstname);
         mSecondName = findViewById(R.id.spin_secondname);
         arrMusicTitle = new ArrayList<String>();
-//        mAdapter = new CustomAdapter(arrMusicTitle, getApplicationContext());
-//        mListMusic.setAdapter(mAdapter);
         ivPurchase = findViewById(R.id.ivPurchase);
         Intent intent = getIntent();
         if (intent.getStringExtra(MEMBERSHIP).equals("Trial"))
@@ -113,8 +118,7 @@ public class MusicChooseActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent  = new Intent(MusicChooseActivity.this, PurchaseActivity.class);
                 intent.putExtra("BASE","BUY");
-                startActivity(intent);
-//                SplashActivity.getInstance().onUpgradeAppButtonClicked();
+                startActivityForResult(intent,PURCHASE_RESULT);
             }
         });
         if(!isPermissionGranted()){
@@ -485,5 +489,18 @@ public class MusicChooseActivity extends AppCompatActivity {
 
         mAdapter = new CustomAdapter(arrFilteredsecibdTitle, getApplicationContext());
         mListMusic.setAdapter(mAdapter);
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode,
+                                    final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PURCHASE_RESULT && resultCode == RESULT_OK) {
+
+            ivPurchase.setVisibility(View.INVISIBLE);
+            Toast.makeText(this,"Paid successfully",Toast.LENGTH_LONG).show();
+        }
+
     }
 }
