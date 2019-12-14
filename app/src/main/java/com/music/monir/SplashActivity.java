@@ -26,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -40,6 +41,7 @@ import com.google.android.gms.common.AccountPicker;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -51,6 +53,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -95,15 +98,6 @@ public class SplashActivity extends AppCompatActivity {
     public void check_username(){
         SharedPreferences pref = getSharedPreferences(MODE_STATUS,MODE_PRIVATE);
         userEmail = pref.getString("user_email",null);
-//        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-//                .requestEmail()
-//                .build();
-//
-//        GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-//        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-//        startActivityForResult(signInIntent, RC_SIGN_IN);
-//        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-////        Log.e("account",account.getEmail());
 
         if (userEmail==null){
             Intent googlePicker = AccountPicker.newChooseAccountIntent(null, null, new String[]{GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE},
@@ -112,10 +106,6 @@ public class SplashActivity extends AppCompatActivity {
         }
         else
             get_payment_info();
-
-
-
-
     }
 
     public void check_permission(){
@@ -142,72 +132,49 @@ public class SplashActivity extends AppCompatActivity {
             Log.e(TAG, e.toString());
         }
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("payment");
-        myRef.addValueEventListener(new ValueEventListener() {
+        DatabaseReference myRef = database.getReference();
+        myRef.child("payment").addChildEventListener(new ChildEventListener(){
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    HashMap<String, Object> dataMap = (HashMap<String, Object>) dataSnapshot.getValue();
-                    for (String key : dataMap.keySet()) {
-                        Object data = dataMap.get(key);
-                        try {
-                            HashMap<String, Object> userData = (HashMap<String, Object>) data;
-                            String email = userData.get("email").toString();
-                            String date = userData.get("date").toString();
-                            String status = userData.get("status").toString();
-                            user user = new user(email, date, status);
-                            array_user.add(user);
-                        }
-                        catch (Exception e){
-                            Log.e(TAG,e.toString());
-                        }
-                    }
-                    Log.e("Length",String.valueOf(array_user.size()));
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.w(TAG,"Failed to rad value ", databaseError.toException());
-                Toast.makeText(SplashActivity.this, "Failed to read Data", Toast.LENGTH_LONG).show();
-            }
-
-        });
-        check_payment();
-    }
-
-    private void check_payment(){
-        if(userEmail!=null) {
-            boolean is_new = true;
-            for (int i = 0; i < array_user.size(); i++) {
-                if (array_user.get(i).getEmail().equals(userEmail)) {
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                user user = dataSnapshot.getValue(user.class);
+                if (userEmail != null && user.getEmail().endsWith(userEmail)){
                     SharedPreferences.Editor editor = getSharedPreferences(MODE_STATUS, MODE_PRIVATE).edit();
-                    editor.putString("start_date",array_user.get(i).getDate());
-                    is_new = false;
-                    if (array_user.get(i).getStatus().equals("paid"))
+                    editor.putString("start_date",user.getDate());
+                    if (user.getStatus().equals("paid"))
                     {
                         editor.putString("status","Paid");
                         editor.apply();
                         main();
-                        break;
                     }
-                    else
-                    {
-                        editor.putString("status","Trial");
+                    else{
+                        editor.putString("status","trial");
                         editor.apply();
                         main();
-                        break;
                     }
                 }
+                if (userEmail == null){
+                    main();
+                }
             }
-            if (is_new)
-                upload_trial_data(userEmail, "trial");
-        }
-        else{
-            main();
-        }
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
+
+
 
     private void upload_trial_data(String userEmail,String mode) {
         if( userEmail != null) {
@@ -233,9 +200,8 @@ public class SplashActivity extends AppCompatActivity {
                 public void onCancelled(@NonNull DatabaseError databaseError) {
                     Log.w(TAG, "Failed to rad value ", databaseError.toException());
                 }
-            });
-            main();
-        }
+            }
+            );}
     }
 
     private void main(){
@@ -267,7 +233,6 @@ public class SplashActivity extends AppCompatActivity {
                         case 0:
                             showDialog("Trial Ended", String.format(Locale.ENGLISH, "Your Trial is just ended. please buy to continue"), BUY_NOW);
                             break;
-
                     }
                 }
                 catch (Exception E){
@@ -284,12 +249,13 @@ public class SplashActivity extends AppCompatActivity {
         switch (status){
             case "None":
                 SharedPreferences.Editor editor = getSharedPreferences(MODE_STATUS, MODE_PRIVATE).edit();
-                editor.putString("status","Trial");
+                editor.putString("status","trial");
                 editor.putString("start_date",getToday());
                 editor.apply();
+                upload_trial_data(userEmail,"trial");
                 daysRemaining = "5";
                 return TRIAL;
-            case "Trial":
+            case "trial":
 
                 Integer remain = 5-Integer.parseInt(getCountOfDays(start_date,getToday()));
                 if (remain > 0){
@@ -311,8 +277,6 @@ public class SplashActivity extends AppCompatActivity {
         mainIntent.putExtra(MEMBERSHIP,membership);
         finish();
         startActivity(mainIntent);
-
-
     }
 
     private void showDialog(String title, String message, String buttonLabel){
@@ -411,6 +375,7 @@ public class SplashActivity extends AppCompatActivity {
                     check_username();
                 } else {
                     Toast.makeText(this, "Required permission",Toast.LENGTH_LONG).show();
+                    finish();
                 }
             }
         }
@@ -430,31 +395,14 @@ public class SplashActivity extends AppCompatActivity {
             }
             Log.d(TAG, userEmail);
         }
-        if (requestCode == RC_SIGN_IN) {
-            // The Task returned from this call is always completed, no need to attach
-            // a listener.
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            handleSignInResult(task);
-        }
+
         if (userEmail == null){
             Toast.makeText(SplashActivity.this,"Waning. Your data will not saved to server", Toast.LENGTH_LONG).show();
         }
         get_payment_info();
 
     }
-    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
-        try {
-            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
 
-            // Signed in successfully, show authenticated UI.
-            Log.e("account",account.getEmail());
-        } catch (ApiException e) {
-            // The ApiException status code indicates the detailed failure reason.
-            // Please refer to the GoogleSignInStatusCodes class reference for more information.
-            Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
-//            updateUI(null);
-        }
-    }
 
     public static String getToday(){
         calendar = Calendar.getInstance();

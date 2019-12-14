@@ -39,7 +39,7 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
         DialogInterface.OnClickListener {
 
     boolean InvalidDeveice = false;
-
+    final String MODE_STATUS = "trial_mode_status";
 
     String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs0p78+rUMwrVUUGzA43bpsGxQoeA2UFVAV9uph6+Z5sjfkkXTkaNJj7igSdVaM+Dj+NNgfV7zkhzD1y2EkvKsX7Zy1yXPTQjcS+ddg8uz+HCy/FZKnwVHgJPRxdXujLl40iyB1NrVJUtI3nbzOAbsS2PJBybJC9JMCnoBro/+1AfI1JMPNwCid8lV8TwAYqWl7KOCQD8uQQbqNTfS1GAOY5TS7bi/vicF/m+YlCjyKCD6XnNfNDm2liJLi07mwd/FlV6dM1/5IE9/kd2RhvRRXg9MVGIdYKtHH5nf/Ru11rZw0SKFaTvXdW5lwP9nwQOzmeBajxWyqGO5KYHLuq1ZwIDAQAB";
 
@@ -87,9 +87,7 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_purchase);
-        upload_paid_data(SplashActivity.userEmail,"paid");
-        setResult(RESULT_OK);
-        finish();
+//        upload_paid_data(SplashActivity.userEmail,"paid");
         buy = (Button)findViewById(R.id.btn_buy);
         msg = (TextView)findViewById(R.id.msg_end_trial);
         buy.setOnClickListener(new View.OnClickListener() {
@@ -157,16 +155,7 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
             }
         });
     }
-    private void upgrade_membership(){
 
-        SharedPreferences.Editor editor = getSharedPreferences(IS_PREMIUM, MODE_PRIVATE).edit();
-        editor.putString(MEMBERSHIP, "TRUE");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-            editor.apply();
-        }
-        finish();
-
-    }
     private void define_usermembership(){
         SharedPreferences.Editor editor = getSharedPreferences(IS_PREMIUM, MODE_PRIVATE).edit();
         editor.putString(MEMBERSHIP, "FALSE");
@@ -208,44 +197,7 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
             }
             Log.d(TAG, "User is " + (mIsPremium ? "PREMIUM" : "NOT PREMIUM"));
 
-            /*
-            // First find out which subscription is auto renewing
-            Purchase gasMonthly = inventory.getPurchase(SKU_INFINITE_GAS_MONTHLY);
-            Purchase gasYearly = inventory.getPurchase(SKU_INFINITE_GAS_YEARLY);
-            if (gasMonthly != null && gasMonthly.isAutoRenewing()) {
-                mInfiniteGasSku = SKU_INFINITE_GAS_MONTHLY;
-                mAutoRenewEnabled = true;
-            } else if (gasYearly != null && gasYearly.isAutoRenewing()) {
-                mInfiniteGasSku = SKU_INFINITE_GAS_YEARLY;
-                mAutoRenewEnabled = true;
-            } else {
-                mInfiniteGasSku = "";
-                mAutoRenewEnabled = false;
-            }
 
-
-            // The user is subscribed if either subscription exists, even if neither is auto
-            // renewing
-            mSubscribedToInfiniteGas = (gasMonthly != null && verifyDeveloperPayload(gasMonthly))
-                    || (gasYearly != null && verifyDeveloperPayload(gasYearly));
-            Log.d(TAG, "User " + (mSubscribedToInfiniteGas ? "HAS" : "DOES NOT HAVE")
-                    + " infinite gas subscription.");
-            if (mSubscribedToInfiniteGas) mTank = TANK_MAX;
-
-             */
-
-            // Check for gas delivery -- if we own gas, we should fill up the tank immediately
-//            Purchase gasPurchase = inventory.getPurchase(SKU_GAS);
-            /*
-            if (gasPurchase != null && verifyDeveloperPayload(gasPurchase)) {
-                Log.d(TAG, "We have gas. Consuming it.");
-                try {
-                    mHelper.consumeAsync(inventory.getPurchase(SKU_GAS), mConsumeFinishedListener);
-                } catch (IabHelper.IabAsyncInProgressException e) {
-                    complain("Error consuming gas. Another async operation in progress.");
-                }
-                return;
-            }*/
             setWaitScreen(false);
             Log.d(TAG, "Initial inventory query finished; enabling main UI.");
         }
@@ -394,7 +346,6 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
                 Log.d(TAG, "Purchase is premium upgrade. Congratulating user.");
                 alert("Thank you for Buying App!");
                 mIsPremium = true;
-                upgrade_membership();
                 upload_paid_data(SplashActivity.userEmail,"paid");
 
                 /*
@@ -501,7 +452,11 @@ public class PurchaseActivity extends AppCompatActivity implements IabBroadcastR
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     String value = dataSnapshot.getValue(String.class);
                     Log.d(TAG, "Value is:" + value);
-                    PurchaseActivity.super.setResult(RESULT_OK);
+                    SharedPreferences.Editor editor = getSharedPreferences(MODE_STATUS, MODE_PRIVATE).edit();
+                    editor.putString("status","Paid");
+                    editor.apply();
+                    setResult(RESULT_OK);
+                    finish();
                 }
 
 

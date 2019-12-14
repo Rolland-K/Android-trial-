@@ -145,9 +145,6 @@ public class MusicChooseActivity extends AppCompatActivity {
                     Log.e("Check if it is running",item.toString().split("_")[0]);
                     setadapter(arrFirstName,mFirstName);
                 }
-//                mAdapter = new CustomAdapter(arrMusicTitle, getApplicationContext());
-//                mListMusic.setAdapter(mAdapter);
-
             }
 
             @Override
