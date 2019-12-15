@@ -164,7 +164,7 @@ public class SplashActivity extends AppCompatActivity {
                         main();
                     }
                 }
-                if (userEmail == null){
+                else {
                     main();
                 }
             }
