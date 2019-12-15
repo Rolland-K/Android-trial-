@@ -31,6 +31,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.PermissionChecker;
 
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -110,7 +111,7 @@ public class SplashActivity extends AppCompatActivity {
 
     public void check_permission(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            if (checkSelfPermission(Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    Activity#requestPermissions
                 ActivityCompat.requestPermissions(this,
@@ -120,6 +121,17 @@ public class SplashActivity extends AppCompatActivity {
             else
             {
                 check_username();
+            }
+        }
+        else{
+            int permission = PermissionChecker.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS);
+
+            if (permission == PermissionChecker.PERMISSION_GRANTED) {
+                check_username();
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.GET_ACCOUNTS},
+                        MY_PERMISSIONS_REQUEST_READ_STATE);
             }
         }
     }
